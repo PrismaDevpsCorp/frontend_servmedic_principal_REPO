@@ -259,3 +259,15 @@ td small {
     grid-template-columns: 1fr;
   }
 }
+.report-link {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e, #14b8a6, #2563eb);
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}

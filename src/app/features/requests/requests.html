@@ -140,7 +140,7 @@
                     }
 
                     @if (request.status === 'FINALIZADO') {
-                      <span class="done-label">Lista para ficha</span>
+                      <a class="report-link" [routerLink]="['/attention-report', request.id]">Abrir ficha</a>
                     }
                   </div>
                 </td>

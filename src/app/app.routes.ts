@@ -29,6 +29,10 @@ export const routes: Routes = [
         component: AttentionReport
       },
       {
+        path: 'attention-report/:requestId',
+        component: AttentionReport
+      },
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard'

@@ -1,9 +1,19 @@
 <section class="page-card">
   <p>Ficha medica</p>
   <h2>Reporte de atencion seguro</h2>
+
+  @if (requestId()) {
+    <div class="request-id-card">
+      Solicitud seleccionada:
+      <strong>#{{ requestId() }}</strong>
+    </div>
+  }
+
   <span>
     El backend ya tiene el endpoint seguro:
     <code>/api/specialist/medical-requests/&lt;id&gt;/attention-report</code>.
-    Luego agregaremos formulario, guardado y consulta.
+    En el siguiente bloque agregaremos consulta, formulario y guardado.
   </span>
+
+  <a routerLink="/requests" class="back-link">Volver a solicitudes</a>
 </section>

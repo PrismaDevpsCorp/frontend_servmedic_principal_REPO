@@ -1,9 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-attention-report',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './attention-report.html',
-  styleUrl: './attention-report.scss',
+  styleUrl: './attention-report.scss'
 })
-export class AttentionReport {}
+export class AttentionReport {
+  private readonly route = inject(ActivatedRoute);
+
+  requestId = computed(() => this.route.snapshot.paramMap.get('requestId'));
+}

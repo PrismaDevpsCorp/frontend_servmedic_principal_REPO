@@ -1,19 +1,142 @@
-<section class="page-card">
-  <p>Ficha medica</p>
-  <h2>Reporte de atencion seguro</h2>
+<section class="report-page">
+  <div class="page-heading">
+    <div>
+      <p>Ficha medica</p>
+      <h2>Reporte de atencion seguro</h2>
+      <span>Registre y actualice la ficha medica de la solicitud seleccionada.</span>
+    </div>
 
-  @if (requestId()) {
-    <div class="request-id-card">
-      Solicitud seleccionada:
-      <strong>#{{ requestId() }}</strong>
+    <a routerLink="/requests" class="back-link">Volver a solicitudes</a>
+  </div>
+
+  <div class="request-id-card">
+    Solicitud seleccionada:
+    <strong>#{{ requestId }}</strong>
+  </div>
+
+  @if (loading()) {
+    <div class="info-message">Cargando ficha medica...</div>
+  }
+
+  @if (notFound()) {
+    <div class="warning-message">
+      Esta solicitud aun no tiene ficha medica. Complete el formulario para crearla.
     </div>
   }
 
-  <span>
-    El backend ya tiene el endpoint seguro:
-    <code>/api/specialist/medical-requests/&lt;id&gt;/attention-report</code>.
-    En el siguiente bloque agregaremos consulta, formulario y guardado.
-  </span>
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
 
-  <a routerLink="/requests" class="back-link">Volver a solicitudes</a>
+  @if (successMessage()) {
+    <div class="success-message">{{ successMessage() }}</div>
+  }
+
+  @if (report()) {
+    <div class="report-summary">
+      <article>
+        <span>Codigo</span>
+        <strong>{{ report()?.requestCode }}</strong>
+      </article>
+
+      <article>
+        <span>Paciente</span>
+        <strong>{{ report()?.patientFullName }}</strong>
+      </article>
+
+      <article>
+        <span>Servicio</span>
+        <strong>{{ report()?.serviceName }}</strong>
+      </article>
+
+      <article>
+        <span>Actualizado</span>
+        <strong>{{ report()?.updatedAt | date:'dd/MM/yyyy HH:mm' }}</strong>
+      </article>
+    </div>
+  }
+
+  <form class="report-form" [formGroup]="form" (ngSubmit)="saveReport()">
+    <label>
+      Observaciones clinicas *
+      <textarea
+        rows="5"
+        formControlName="clinicalObservations"
+        placeholder="Describa la evaluacion clinica realizada al paciente."
+      ></textarea>
+
+      @if (hasError('clinicalObservations')) {
+        <small>Las observaciones clinicas son obligatorias.</small>
+      }
+    </label>
+
+    <label>
+      Impresion diagnostica
+      <textarea
+        rows="4"
+        formControlName="diagnosticImpression"
+        placeholder="Ingrese la impresion diagnostica."
+      ></textarea>
+    </label>
+
+    <label>
+      Recomendaciones *
+      <textarea
+        rows="4"
+        formControlName="recommendations"
+        placeholder="Ingrese recomendaciones para el paciente."
+      ></textarea>
+
+      @if (hasError('recommendations')) {
+        <small>Las recomendaciones son obligatorias.</small>
+      }
+    </label>
+
+    <label>
+      Indicaciones
+      <textarea
+        rows="4"
+        formControlName="indications"
+        placeholder="Ingrese indicaciones adicionales."
+      ></textarea>
+    </label>
+
+    <label>
+      Signos vitales
+      <textarea
+        rows="3"
+        formControlName="vitalSigns"
+        placeholder="Ejemplo: PA 120/80, FC 78, Temp 36.7 C, SatO2 98%."
+      ></textarea>
+    </label>
+
+    <label>
+      URL de adjunto
+      <input
+        type="text"
+        formControlName="attachmentUrl"
+        placeholder="Opcional: URL de archivo o imagen relacionada"
+      />
+    </label>
+
+    <div class="bottom-feedback">
+      @if (successMessage()) {
+        <div class="success-message inline-message">{{ successMessage() }}</div>
+      }
+
+      @if (errorMessage()) {
+        <div class="error-message inline-message">{{ errorMessage() }}</div>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="secondary-button" (click)="loadReport()" [disabled]="loading() || saving()">
+        Recargar
+      </button>
+
+      <button type="submit" [disabled]="saving()">
+        {{ saving() ? 'Guardando...' : 'Guardar ficha medica' }}
+      </button>
+    </div>
+  </form>
 </section>

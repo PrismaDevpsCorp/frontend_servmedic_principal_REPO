@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { Login } from './features/login/login';
 import { Dashboard } from './features/dashboard/dashboard';
 import { Requests } from './features/requests/requests';
-import { AttentionReport } from './features/attention-report/attention-report';
+import { AttentionReportComponent } from './features/attention-report/attention-report';
 import { SpecialistLayout } from './layout/specialist-layout/specialist-layout';
 import { specialistAuthGuard } from './core/auth/specialist-auth.guard';
 
@@ -26,11 +26,11 @@ export const routes: Routes = [
       },
       {
         path: 'attention-report',
-        component: AttentionReport
+        component: AttentionReportComponent
       },
       {
         path: 'attention-report/:requestId',
-        component: AttentionReport
+        component: AttentionReportComponent
       },
       {
         path: '',

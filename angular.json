@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "tmp-frontend-servmedic-principal": {
+    "frontend-servmedic-principal": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -61,10 +61,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "tmp-frontend-servmedic-principal:build:production"
+              "buildTarget": "frontend-servmedic-principal:build:production"
             },
             "development": {
-              "buildTarget": "tmp-frontend-servmedic-principal:build:development"
+              "buildTarget": "frontend-servmedic-principal:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -76,3 +76,4 @@
     }
   }
 }
+

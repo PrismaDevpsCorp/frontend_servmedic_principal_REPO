@@ -1,8 +1,154 @@
-<section class="page-card">
-  <p>Solicitudes medicas</p>
-  <h2>Gestion de solicitudes del especialista</h2>
-  <span>
-    En el siguiente bloque conectaremos esta pantalla con el backend:
-    pendientes, asignadas, aceptar, iniciar ruta, iniciar atencion y finalizar.
-  </span>
+<section class="requests-page">
+  <div class="page-heading">
+    <div>
+      <p>Solicitudes medicas</p>
+      <h2>Gestion de solicitudes del especialista</h2>
+      <span>Consulte solicitudes pendientes, asignadas e historial operativo.</span>
+    </div>
+
+    <button type="button" (click)="loadRequests()" [disabled]="loading()">
+      {{ loading() ? 'Actualizando...' : 'Actualizar' }}
+    </button>
+  </div>
+
+  <div class="summary-grid">
+    <article>
+      <span>Total visible</span>
+      <strong>{{ totalRequests() }}</strong>
+    </article>
+
+    <article>
+      <span>Pendientes</span>
+      <strong>{{ pendingRequests().length }}</strong>
+    </article>
+
+    <article>
+      <span>Activas</span>
+      <strong>{{ activeRequests() }}</strong>
+    </article>
+
+    <article>
+      <span>Finalizadas</span>
+      <strong>{{ finishedRequests() }}</strong>
+    </article>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  <div class="section-card">
+    <div class="section-title">
+      <h3>Solicitudes pendientes</h3>
+      <span>{{ pendingRequests().length }} registro(s)</span>
+    </div>
+
+    @if (pendingRequests().length === 0) {
+      <div class="empty-state">No hay solicitudes pendientes por el momento.</div>
+    } @else {
+      <div class="cards-grid">
+        @for (request of pendingRequests(); track request.id) {
+          <article class="request-card">
+            <div class="request-top">
+              <div>
+                <strong>{{ request.requestCode }}</strong>
+                <span>{{ request.serviceName }}</span>
+              </div>
+              <span class="status-badge" [ngClass]="statusClass(request.status)">
+                {{ statusLabel(request.status) }}
+              </span>
+            </div>
+
+            <div class="request-body">
+              <p><b>Paciente:</b> {{ request.patientFullName }}</p>
+              <p><b>Direccion:</b> {{ request.addressText }}</p>
+              <p><b>Referencia:</b> {{ request.addressReference || 'Sin referencia' }}</p>
+              <p><b>Monto estimado:</b> {{ request.estimatedAmount | currency:'PEN':'symbol':'1.2-2' }}</p>
+              <p><b>Notas:</b> {{ request.patientNotes || 'Sin notas' }}</p>
+            </div>
+
+            <div class="actions">
+              @if (canAccept(request)) {
+                <button type="button" (click)="accept(request)" [disabled]="actionLoadingId() === request.id">
+                  {{ actionLoadingId() === request.id ? 'Procesando...' : 'Aceptar solicitud' }}
+                </button>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">
+      <h3>Asignadas e historial</h3>
+      <span>{{ assignedRequests().length }} registro(s)</span>
+    </div>
+
+    @if (assignedRequests().length === 0) {
+      <div class="empty-state">Aun no hay solicitudes asignadas.</div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Codigo</th>
+              <th>Paciente</th>
+              <th>Servicio</th>
+              <th>Estado</th>
+              <th>Monto</th>
+              <th>Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (request of assignedRequests(); track request.id) {
+              <tr>
+                <td>
+                  <strong>{{ request.requestCode }}</strong>
+                  <small>{{ request.addressText }}</small>
+                </td>
+                <td>{{ request.patientFullName }}</td>
+                <td>{{ request.serviceName }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="statusClass(request.status)">
+                    {{ statusLabel(request.status) }}
+                  </span>
+                </td>
+                <td>{{ request.estimatedAmount | currency:'PEN':'symbol':'1.2-2' }}</td>
+                <td>{{ request.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <div class="row-actions">
+                    @if (canStartRoute(request)) {
+                      <button type="button" (click)="startRoute(request)" [disabled]="actionLoadingId() === request.id">
+                        Iniciar ruta
+                      </button>
+                    }
+
+                    @if (canStartAttention(request)) {
+                      <button type="button" (click)="startAttention(request)" [disabled]="actionLoadingId() === request.id">
+                        Iniciar atencion
+                      </button>
+                    }
+
+                    @if (canFinish(request)) {
+                      <button type="button" (click)="finish(request)" [disabled]="actionLoadingId() === request.id">
+                        Finalizar
+                      </button>
+                    }
+
+                    @if (request.status === 'FINALIZADO') {
+                      <span class="done-label">Lista para ficha</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
 </section>

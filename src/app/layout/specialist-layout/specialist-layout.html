@@ -1,0 +1,37 @@
+<div class="core-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">MD</div>
+      <div>
+        <strong>MedicDrive</strong>
+        <span>CORE Especialista</span>
+      </div>
+    </div>
+
+    <nav>
+      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+      <a routerLink="/requests" routerLinkActive="active">Solicitudes</a>
+      <a routerLink="/attention-report" routerLinkActive="active">Ficha medica</a>
+    </nav>
+
+    <div class="specialist-card">
+      <small>Especialista conectado</small>
+      <strong>{{ session?.fullName || 'Especialista' }}</strong>
+      <span>{{ session?.email }}</span>
+    </div>
+
+    <button class="logout" type="button" (click)="logout()">Cerrar sesion</button>
+  </aside>
+
+  <main class="content">
+    <header class="topbar">
+      <div>
+        <p>Panel principal</p>
+        <h1>Gestion operativa MedicDrive</h1>
+      </div>
+      <span class="status">AWS conectado</span>
+    </header>
+
+    <router-outlet></router-outlet>
+  </main>
+</div>

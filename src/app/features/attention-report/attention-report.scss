@@ -1,0 +1,28 @@
+.page-card {
+  border-radius: 28px;
+  padding: 32px;
+  background: white;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.page-card p {
+  margin: 0 0 10px;
+  color: #0f766e;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 12px;
+}
+
+.page-card h2 {
+  margin: 0;
+  font-size: 32px;
+  letter-spacing: -0.04em;
+}
+
+.page-card span {
+  display: block;
+  margin-top: 14px;
+  color: #64748b;
+  line-height: 1.7;
+}

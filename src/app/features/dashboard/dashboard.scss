@@ -1,0 +1,65 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: 18px;
+}
+
+.hero-card,
+.metric-card {
+  min-height: 180px;
+  border-radius: 28px;
+  padding: 26px;
+  background: white;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.hero-card {
+  background:
+    radial-gradient(circle at top right, rgba(20, 184, 166, 0.28), transparent 35%),
+    linear-gradient(135deg, #ffffff, #f2fffb);
+}
+
+.hero-card p {
+  margin: 0 0 10px;
+  color: #0f766e;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+
+.hero-card h2 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.hero-card span,
+.metric-card span {
+  display: block;
+  margin-top: 14px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.metric-card strong {
+  color: #0f766e;
+}
+
+.metric-card h3 {
+  margin: 20px 0 0;
+  font-size: 42px;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

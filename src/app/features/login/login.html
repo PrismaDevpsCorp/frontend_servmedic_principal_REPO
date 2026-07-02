@@ -1,0 +1,55 @@
+<section class="login-page">
+  <div class="login-shell">
+    <div class="brand-panel">
+      <div class="brand-mark">MD</div>
+      <p class="eyebrow">MedicDrive CORE</p>
+      <h1>Gestion medica inteligente para especialistas</h1>
+      <p class="brand-copy">
+        Administre solicitudes, atenciones, fichas medicas, historial, estadisticas y proximamente pagos desde un unico panel profesional.
+      </p>
+
+      <div class="status-card">
+        <span class="pulse"></span>
+        Plataforma conectada a backend AWS
+      </div>
+    </div>
+
+    <div class="login-card">
+      <p class="eyebrow">Acceso especialista</p>
+      <h2>Iniciar sesion</h2>
+      <p class="muted">Ingrese con su cuenta de especialista MedicDrive.</p>
+
+      <form (ngSubmit)="login()">
+        <label>
+          Usuario o correo
+          <input
+            type="text"
+            name="username"
+            [(ngModel)]="username"
+            autocomplete="username"
+            placeholder="medico.demo@correo.com"
+          />
+        </label>
+
+        <label>
+          Contrasena
+          <input
+            type="password"
+            name="password"
+            [(ngModel)]="password"
+            autocomplete="current-password"
+            placeholder="Ingrese su contrasena"
+          />
+        </label>
+
+        @if (errorMessage()) {
+          <div class="error-message">{{ errorMessage() }}</div>
+        }
+
+        <button type="submit" [disabled]="loading()">
+          {{ loading() ? 'Validando...' : 'Entrar al CORE' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</section>

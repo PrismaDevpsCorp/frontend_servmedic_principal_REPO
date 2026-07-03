@@ -1,13 +1,14 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { Component, computed, inject, signal } from '@angular/core';
-import { finalize } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { Observable, finalize } from 'rxjs';
 import { MedicalRequest } from '../../core/models/medical-request.model';
 import { SpecialistMedicalRequestService } from '../../core/services/specialist-medical-request.service';
 
 @Component({
   selector: 'app-requests',
-  imports: [CommonModule, DatePipe, RouterLink],
+  imports: [CommonModule, DatePipe, RouterLink, FormsModule],
   templateUrl: './requests.html',
   styleUrl: './requests.scss'
 })
@@ -16,15 +17,35 @@ export class Requests {
 
   pendingRequests = signal<MedicalRequest[]>([]);
   assignedRequests = signal<MedicalRequest[]>([]);
+
+  statusFilter = signal('ALL');
+  searchTerm = signal('');
+
   loading = signal(false);
   actionLoadingId = signal<number | null>(null);
   errorMessage = signal('');
 
   totalRequests = computed(() => this.pendingRequests().length + this.assignedRequests().length);
-  finishedRequests = computed(() => this.assignedRequests().filter((item) => item.status === 'FINALIZADO').length);
+
+  finishedRequests = computed(() =>
+    this.assignedRequests().filter((item) => item.status === 'FINALIZADO').length
+  );
+
   activeRequests = computed(() =>
     this.assignedRequests().filter((item) => item.status !== 'FINALIZADO').length
   );
+
+  filteredAssignedRequests = computed(() => {
+    const status = this.statusFilter();
+    const search = this.normalizeText(this.searchTerm());
+
+    return this.assignedRequests().filter((request) => {
+      const statusMatches = status === 'ALL' || request.status === status;
+      const searchMatches = !search || this.matchesSearch(request, search);
+
+      return statusMatches && searchMatches;
+    });
+  });
 
   constructor() {
     this.loadRequests();
@@ -54,6 +75,19 @@ export class Requests {
         this.errorMessage.set('No se pudieron cargar las solicitudes pendientes.');
       }
     });
+  }
+
+  updateStatusFilter(value: string): void {
+    this.statusFilter.set(value);
+  }
+
+  updateSearchTerm(value: string): void {
+    this.searchTerm.set(value);
+  }
+
+  clearFilters(): void {
+    this.statusFilter.set('ALL');
+    this.searchTerm.set('');
   }
 
   accept(request: MedicalRequest): void {
@@ -104,7 +138,7 @@ export class Requests {
     return 'status-' + status.toLowerCase().replace('_', '-');
   }
 
-  private runAction(requestId: number, action: () => ReturnType<SpecialistMedicalRequestService['accept']>): void {
+  private runAction(requestId: number, action: () => Observable<MedicalRequest>): void {
     this.actionLoadingId.set(requestId);
     this.errorMessage.set('');
 
@@ -116,5 +150,30 @@ export class Requests {
           this.errorMessage.set('No se pudo ejecutar la accion solicitada.');
         }
       });
+  }
+
+  private matchesSearch(request: MedicalRequest, search: string): boolean {
+    const values = [
+      request.requestCode,
+      request.patientFullName,
+      request.patientDni,
+      request.serviceName,
+      request.professionName,
+      request.addressText,
+      request.addressReference,
+      request.patientNotes,
+      this.statusLabel(request.status)
+    ];
+
+    return values.some((value) => this.normalizeText(value).includes(search));
+  }
+
+  private normalizeText(value?: string | null): string {
+    return (value ?? '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
   }
 }

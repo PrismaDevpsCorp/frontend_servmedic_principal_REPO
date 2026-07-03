@@ -11,6 +11,7 @@ export interface MedicalRequest {
   requestCode: string;
   patientProfileId: number;
   patientFullName: string;
+  patientDni?: string | null;
   serviceCode: string;
   serviceName: string;
   professionCode: string;

@@ -61,9 +61,10 @@
 
             <div class="request-body">
               <p><b>Paciente:</b> {{ request.patientFullName }}</p>
+              <p><b>DNI:</b> {{ request.patientDni || 'No registrado' }}</p>
               <p><b>Direccion:</b> {{ request.addressText }}</p>
               <p><b>Referencia:</b> {{ request.addressReference || 'Sin referencia' }}</p>
-              <p><b>Monto estimado:</b> S/{{ request.estimatedAmount | number:'1.2-2' }}</p>
+              <p><b>Monto estimado:</b> S/{{ (request.estimatedAmount ?? 0) | number:'1.2-2' }}</p>
               <p><b>Notas:</b> {{ request.patientNotes || 'Sin notas' }}</p>
             </div>
 
@@ -80,14 +81,52 @@
     }
   </div>
 
+  <div class="filters-card">
+    <div>
+      <p>Historial avanzado</p>
+      <h3>Filtros de busqueda</h3>
+    </div>
+
+    <div class="filters-grid">
+      <label>
+        Buscar
+        <input
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="updateSearchTerm($event)"
+          placeholder="DNI, codigo, paciente, servicio, direccion..."
+        />
+      </label>
+
+      <label>
+        Estado
+        <select [ngModel]="statusFilter()" (ngModelChange)="updateStatusFilter($event)">
+          <option value="ALL">Todos</option>
+          <option value="ACCEPTED">Aceptadas</option>
+          <option value="EN_CAMINO">En camino</option>
+          <option value="EN_ATENCION">En atencion</option>
+          <option value="FINALIZADO">Finalizadas</option>
+        </select>
+      </label>
+
+      <button type="button" class="secondary-button" (click)="clearFilters()">
+        Limpiar filtros
+      </button>
+    </div>
+  </div>
+
   <div class="section-card">
     <div class="section-title">
       <h3>Asignadas e historial</h3>
-      <span>{{ assignedRequests().length }} registro(s)</span>
+      <span>
+        {{ filteredAssignedRequests().length }} de {{ assignedRequests().length }} registro(s)
+      </span>
     </div>
 
     @if (assignedRequests().length === 0) {
       <div class="empty-state">Aun no hay solicitudes asignadas.</div>
+    } @else if (filteredAssignedRequests().length === 0) {
+      <div class="empty-state">No hay resultados con los filtros aplicados.</div>
     } @else {
       <div class="table-wrap">
         <table>
@@ -104,20 +143,23 @@
           </thead>
 
           <tbody>
-            @for (request of assignedRequests(); track request.id) {
+            @for (request of filteredAssignedRequests(); track request.id) {
               <tr>
                 <td>
                   <strong>{{ request.requestCode }}</strong>
                   <small>{{ request.addressText }}</small>
                 </td>
-                <td>{{ request.patientFullName }}</td>
+                <td>
+                  {{ request.patientFullName }}
+                  <small>DNI: {{ request.patientDni || 'No registrado' }}</small>
+                </td>
                 <td>{{ request.serviceName }}</td>
                 <td>
                   <span class="status-badge" [ngClass]="statusClass(request.status)">
                     {{ statusLabel(request.status) }}
                   </span>
                 </td>
-                <td>S/{{ request.estimatedAmount | number:'1.2-2' }}</td>
+                <td>S/{{ (request.estimatedAmount ?? 0) | number:'1.2-2' }}</td>
                 <td>{{ request.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td>
                   <div class="row-actions">
@@ -140,7 +182,9 @@
                     }
 
                     @if (request.status === 'FINALIZADO') {
-                      <a class="report-link" [routerLink]="['/attention-report', request.id]">Abrir ficha</a>
+                      <a class="report-link" [routerLink]="['/attention-report', request.id]">
+                        Abrir ficha
+                      </a>
                     }
                   </div>
                 </td>

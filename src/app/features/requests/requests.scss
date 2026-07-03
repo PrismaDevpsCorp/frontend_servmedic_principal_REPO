@@ -11,7 +11,8 @@
 }
 
 .page-heading p,
-.section-title span {
+.section-title span,
+.filters-card p {
   margin: 0 0 8px;
   color: #0f766e;
   font-size: 12px;
@@ -45,6 +46,11 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.secondary-button {
+  color: #0f766e;
+  background: #ccfbf1;
+}
+
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -53,7 +59,8 @@ button:disabled {
 
 .summary-grid article,
 .section-card,
-.request-card {
+.request-card,
+.filters-card {
   border-radius: 24px;
   background: white;
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
@@ -76,8 +83,51 @@ button:disabled {
   color: #102033;
 }
 
-.section-card {
+.section-card,
+.filters-card {
   padding: 24px;
+}
+
+.filters-card {
+  display: grid;
+  gap: 18px;
+}
+
+.filters-card h3 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 0.8fr auto;
+  gap: 14px;
+  align-items: end;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  color: #334155;
+  font-weight: 900;
+}
+
+input,
+select {
+  width: 100%;
+  border: 1px solid #d8e3ee;
+  border-radius: 16px;
+  padding: 13px 14px;
+  font-size: 15px;
+  outline: none;
+  background: white;
+  color: #102033;
+}
+
+input:focus,
+select:focus {
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.16);
 }
 
 .section-title {
@@ -230,19 +280,23 @@ td small {
   background: #dcfce7;
 }
 
-.done-label {
+.report-link {
   display: inline-flex;
+  align-items: center;
+  width: fit-content;
   border-radius: 999px;
-  padding: 8px 11px;
-  color: #166534;
-  background: #dcfce7;
+  padding: 8px 12px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e, #14b8a6, #2563eb);
   font-size: 12px;
   font-weight: 900;
+  text-decoration: none;
 }
 
 @media (max-width: 1100px) {
   .summary-grid,
-  .cards-grid {
+  .cards-grid,
+  .filters-grid {
     grid-template-columns: 1fr 1fr;
   }
 }
@@ -255,19 +309,8 @@ td small {
   }
 
   .summary-grid,
-  .cards-grid {
+  .cards-grid,
+  .filters-grid {
     grid-template-columns: 1fr;
   }
-}
-.report-link {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  border-radius: 999px;
-  padding: 8px 12px;
-  color: #ffffff;
-  background: linear-gradient(135deg, #0f766e, #14b8a6, #2563eb);
-  font-size: 12px;
-  font-weight: 900;
-  text-decoration: none;
 }

@@ -5,10 +5,11 @@ import { RouterLink } from '@angular/router';
 import { Observable, finalize } from 'rxjs';
 import { MedicalRequest } from '../../core/models/medical-request.model';
 import { SpecialistMedicalRequestService } from '../../core/services/specialist-medical-request.service';
+import { RequestLocationMap } from './request-location-map/request-location-map';
 
 @Component({
   selector: 'app-requests',
-  imports: [CommonModule, DatePipe, RouterLink, FormsModule],
+  imports: [CommonModule, DatePipe, RouterLink, FormsModule, RequestLocationMap],
   templateUrl: './requests.html',
   styleUrl: './requests.scss'
 })
@@ -17,6 +18,7 @@ export class Requests {
 
   pendingRequests = signal<MedicalRequest[]>([]);
   assignedRequests = signal<MedicalRequest[]>([]);
+  selectedMapRequest = signal<MedicalRequest | null>(null);
 
   statusFilter = signal('ALL');
   searchTerm = signal('');
@@ -62,6 +64,7 @@ export class Requests {
         this.requestService.listAssigned().subscribe({
           next: (assigned) => {
             this.assignedRequests.set(assigned);
+            this.ensureSelectedMapRequest(assigned);
             this.loading.set(false);
           },
           error: () => {
@@ -88,6 +91,17 @@ export class Requests {
   clearFilters(): void {
     this.statusFilter.set('ALL');
     this.searchTerm.set('');
+  }
+
+  selectMapRequest(request: MedicalRequest): void {
+    this.selectedMapRequest.set(request);
+  }
+
+  hasCoordinates(request: MedicalRequest): boolean {
+    return request.latitude !== null
+      && request.latitude !== undefined
+      && request.longitude !== null
+      && request.longitude !== undefined;
   }
 
   accept(request: MedicalRequest): void {
@@ -152,6 +166,17 @@ export class Requests {
       });
   }
 
+  private ensureSelectedMapRequest(assigned: MedicalRequest[]): void {
+    const current = this.selectedMapRequest();
+
+    if (current && assigned.some((item) => item.id === current.id)) {
+      return;
+    }
+
+    const firstWithLocation = assigned.find((item) => this.hasCoordinates(item));
+    this.selectedMapRequest.set(firstWithLocation ?? null);
+  }
+
   private matchesSearch(request: MedicalRequest, search: string): boolean {
     const values = [
       request.requestCode,
@@ -168,7 +193,7 @@ export class Requests {
     return values.some((value) => this.normalizeText(value).includes(search));
   }
 
-  private normalizeText(value?: string | null): string {
+  private normalizeText(value?: string | number | null): string {
     return (value ?? '')
       .toString()
       .trim()

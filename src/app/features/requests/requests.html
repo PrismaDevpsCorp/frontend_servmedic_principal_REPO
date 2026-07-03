@@ -3,7 +3,7 @@
     <div>
       <p>Solicitudes medicas</p>
       <h2>Gestion de solicitudes del especialista</h2>
-      <span>Consulte solicitudes pendientes, asignadas e historial operativo.</span>
+      <span>Consulte solicitudes pendientes, asignadas, historial operativo y ubicacion geografica.</span>
     </div>
 
     <button type="button" (click)="loadRequests()" [disabled]="loading()">
@@ -74,6 +74,12 @@
                   {{ actionLoadingId() === request.id ? 'Procesando...' : 'Aceptar solicitud' }}
                 </button>
               }
+
+              @if (hasCoordinates(request)) {
+                <button type="button" class="map-button" (click)="selectMapRequest(request)">
+                  Ver ubicacion
+                </button>
+              }
             </div>
           </article>
         }
@@ -114,6 +120,8 @@
       </button>
     </div>
   </div>
+
+  <app-request-location-map [request]="selectedMapRequest()"></app-request-location-map>
 
   <div class="section-card">
     <div class="section-title">
@@ -163,6 +171,12 @@
                 <td>{{ request.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td>
                   <div class="row-actions">
+                    @if (hasCoordinates(request)) {
+                      <button type="button" class="map-button" (click)="selectMapRequest(request)">
+                        Ver ubicacion
+                      </button>
+                    }
+
                     @if (canStartRoute(request)) {
                       <button type="button" (click)="startRoute(request)" [disabled]="actionLoadingId() === request.id">
                         Iniciar ruta

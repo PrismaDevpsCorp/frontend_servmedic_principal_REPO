@@ -1,0 +1,55 @@
+<section class="location-map-card">
+  <div class="map-heading">
+    <div>
+      <p>Mapa operativo</p>
+      <h3>Ubicacion de atencion</h3>
+      <span>Visualizacion geografica de la solicitud seleccionada.</span>
+    </div>
+
+    @if (request && hasCoordinates()) {
+      <a [href]="externalMapUrl()" target="_blank" rel="noopener noreferrer">
+        Abrir mapa externo
+      </a>
+    }
+  </div>
+
+  @if (request) {
+    <div class="request-location-summary">
+      <div>
+        <span>Solicitud</span>
+        <strong>{{ request.requestCode }}</strong>
+      </div>
+
+      <div>
+        <span>Paciente</span>
+        <strong>{{ request.patientFullName }}</strong>
+        <small>DNI: {{ request.patientDni || 'No registrado' }}</small>
+      </div>
+
+      <div>
+        <span>Direccion</span>
+        <strong>{{ request.addressText }}</strong>
+        <small>{{ request.addressReference || 'Sin referencia' }}</small>
+      </div>
+
+      <div>
+        <span>Coordenadas</span>
+        <strong>{{ coordinatesLabel() }}</strong>
+      </div>
+    </div>
+  }
+
+  <div class="map-frame">
+    <div #mapContainer class="map-container"></div>
+
+    @if (statusMessage) {
+      <div class="map-placeholder">
+        <strong>{{ statusMessage }}</strong>
+        <span>
+          Para pruebas locales, guarde el token en el navegador con la clave
+          medicdrive_mapbox_token.
+        </span>
+      </div>
+    }
+  </div>
+</section>

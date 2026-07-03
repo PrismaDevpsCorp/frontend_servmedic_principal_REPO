@@ -1,0 +1,135 @@
+.location-map-card {
+  display: grid;
+  gap: 18px;
+  border-radius: 24px;
+  padding: 24px;
+  background: white;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.map-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.map-heading p {
+  margin: 0 0 8px;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.map-heading h3 {
+  margin: 0;
+  font-size: 24px;
+  color: #102033;
+}
+
+.map-heading span {
+  color: #64748b;
+}
+
+.map-heading a {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e, #14b8a6, #2563eb);
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.request-location-summary {
+  display: grid;
+  grid-template-columns: 0.8fr 1fr 1.5fr 1fr;
+  gap: 14px;
+}
+
+.request-location-summary div {
+  border-radius: 18px;
+  padding: 14px;
+  background: #f8fafc;
+}
+
+.request-location-summary span,
+.request-location-summary small {
+  display: block;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.request-location-summary span {
+  margin-bottom: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.request-location-summary strong {
+  display: block;
+  color: #102033;
+}
+
+.request-location-summary small {
+  margin-top: 4px;
+}
+
+.map-frame {
+  position: relative;
+  overflow: hidden;
+  min-height: 360px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #e0f2fe, #ccfbf1);
+}
+
+.map-container {
+  position: absolute;
+  inset: 0;
+}
+
+.map-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+  color: #0f172a;
+  background: rgba(248, 250, 252, 0.86);
+}
+
+.map-placeholder strong {
+  font-size: 18px;
+}
+
+.map-placeholder span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+@media (max-width: 1100px) {
+  .request-location-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .map-heading {
+    flex-direction: column;
+  }
+
+  .request-location-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .map-frame {
+    min-height: 300px;
+  }
+}

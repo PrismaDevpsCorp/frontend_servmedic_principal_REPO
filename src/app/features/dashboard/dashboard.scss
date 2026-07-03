@@ -1,65 +1,225 @@
-.dashboard-grid {
+.dashboard-page {
   display: grid;
-  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: 20px;
+}
+
+.dashboard-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.dashboard-heading p,
+.section-title p {
+  margin: 0 0 8px;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dashboard-heading h2,
+.section-title h3 {
+  margin: 0;
+  letter-spacing: -0.04em;
+}
+
+.dashboard-heading h2 {
+  font-size: 34px;
+}
+
+.section-title h3 {
+  font-size: 26px;
+}
+
+.dashboard-heading span {
+  color: #64748b;
+}
+
+button,
+.section-title a,
+.report-link {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 16px;
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #14b8a6, #2563eb);
+  font-weight: 900;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 18px;
 }
 
-.hero-card,
-.metric-card {
-  min-height: 180px;
-  border-radius: 28px;
-  padding: 26px;
+.metric-card,
+.latest-card {
+  border-radius: 26px;
   background: white;
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
 }
 
+.metric-card {
+  min-height: 170px;
+  padding: 24px;
+}
+
 .hero-card {
   background:
-    radial-gradient(circle at top right, rgba(20, 184, 166, 0.28), transparent 35%),
+    radial-gradient(circle at top right, rgba(20, 184, 166, 0.24), transparent 36%),
     linear-gradient(135deg, #ffffff, #f2fffb);
 }
 
-.hero-card p {
-  margin: 0 0 10px;
+.metric-card p {
+  margin: 0;
   color: #0f766e;
   font-weight: 900;
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 0.12em;
-}
-
-.hero-card h2 {
-  margin: 0;
-  font-size: 34px;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
-}
-
-.hero-card span,
-.metric-card span {
-  display: block;
-  margin-top: 14px;
-  color: #64748b;
-  line-height: 1.6;
-}
-
-.metric-card strong {
-  color: #0f766e;
 }
 
 .metric-card h3 {
-  margin: 20px 0 0;
-  font-size: 42px;
+  margin: 18px 0 0;
+  font-size: 38px;
+  letter-spacing: -0.05em;
+}
+
+.metric-card span {
+  display: block;
+  margin-top: 12px;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+.latest-card {
+  padding: 24px;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.error-message,
+.empty-state {
+  border-radius: 18px;
+  padding: 16px;
+  font-weight: 800;
+}
+
+.error-message {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.empty-state {
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  color: #64748b;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #eef2f7;
+  vertical-align: top;
+}
+
+td small {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+}
+
+.status-badge {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 8px 11px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.status-pending {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.status-accepted {
+  color: #075985;
+  background: #e0f2fe;
+}
+
+.status-en-camino {
+  color: #3730a3;
+  background: #e0e7ff;
+}
+
+.status-en-atencion {
+  color: #0f766e;
+  background: #ccfbf1;
+}
+
+.status-finalizado {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.report-link {
+  display: inline-flex;
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.muted {
+  color: #94a3b8;
+  font-weight: 800;
 }
 
 @media (max-width: 1100px) {
-  .dashboard-grid {
+  .metrics-grid {
     grid-template-columns: 1fr 1fr;
   }
 }
 
-@media (max-width: 700px) {
-  .dashboard-grid {
+@media (max-width: 760px) {
+  .dashboard-heading,
+  .section-title {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .metrics-grid {
     grid-template-columns: 1fr;
   }
 }

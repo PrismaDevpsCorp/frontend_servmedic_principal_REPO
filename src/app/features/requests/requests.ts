@@ -1,4 +1,4 @@
-import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Component, computed, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs';
@@ -7,7 +7,7 @@ import { SpecialistMedicalRequestService } from '../../core/services/specialist-
 
 @Component({
   selector: 'app-requests',
-  imports: [CommonModule, DatePipe, CurrencyPipe, RouterLink],
+  imports: [CommonModule, DatePipe, RouterLink],
   templateUrl: './requests.html',
   styleUrl: './requests.scss'
 })

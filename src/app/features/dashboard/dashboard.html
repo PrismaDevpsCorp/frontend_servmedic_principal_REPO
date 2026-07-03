@@ -1,25 +1,115 @@
-<section class="dashboard-grid">
-  <article class="hero-card">
-    <p>Resumen CORE</p>
-    <h2>Bienvenido al centro operativo del especialista</h2>
-    <span>Desde aqui se gestionaran solicitudes, atenciones, fichas medicas, mapas, estadisticas y pagos.</span>
-  </article>
+<section class="dashboard-page">
+  <div class="dashboard-heading">
+    <div>
+      <p>Resumen CORE</p>
+      <h2>Centro operativo del especialista</h2>
+      <span>Indicadores reales conectados al backend AWS MedicDrive.</span>
+    </div>
 
-  <article class="metric-card">
-    <strong>Solicitudes</strong>
-    <h3>0</h3>
-    <span>Pendientes de conectar con backend</span>
-  </article>
+    <button type="button" (click)="loadDashboard()" [disabled]="loading()">
+      {{ loading() ? 'Actualizando...' : 'Actualizar' }}
+    </button>
+  </div>
 
-  <article class="metric-card">
-    <strong>Atenciones</strong>
-    <h3>0</h3>
-    <span>Historial operativo</span>
-  </article>
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
 
-  <article class="metric-card">
-    <strong>Ficha medica</strong>
-    <h3>OK</h3>
-    <span>Endpoint seguro backend listo</span>
-  </article>
+  <section class="metrics-grid">
+    <article class="metric-card hero-card">
+      <p>Solicitudes visibles</p>
+      <h3>{{ totalRequests() }}</h3>
+      <span>Pendientes, activas y finalizadas del especialista conectado.</span>
+    </article>
+
+    <article class="metric-card">
+      <p>Pendientes</p>
+      <h3>{{ pendingRequests().length }}</h3>
+      <span>Solicitudes disponibles para aceptar.</span>
+    </article>
+
+    <article class="metric-card">
+      <p>Activas</p>
+      <h3>{{ activeRequests() }}</h3>
+      <span>Atenciones en proceso operativo.</span>
+    </article>
+
+    <article class="metric-card">
+      <p>Finalizadas</p>
+      <h3>{{ finishedRequests() }}</h3>
+      <span>Atenciones cerradas correctamente.</span>
+    </article>
+
+    <article class="metric-card">
+      <p>Fichas medicas</p>
+      <h3>{{ reportsCreated() }}</h3>
+      <span>Reportes seguros registrados.</span>
+    </article>
+
+    <article class="metric-card">
+      <p>Monto estimado</p>
+      <h3>S/{{ estimatedFinishedAmount() | number:'1.2-2' }}</h3>
+      <span>Total estimado en atenciones finalizadas.</span>
+    </article>
+  </section>
+
+  <section class="latest-card">
+    <div class="section-title">
+      <div>
+        <p>Actividad reciente</p>
+        <h3>Ultimas solicitudes</h3>
+      </div>
+
+      <a routerLink="/requests">Ver solicitudes</a>
+    </div>
+
+    @if (latestRequests().length === 0) {
+      <div class="empty-state">Aun no hay solicitudes para mostrar.</div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Codigo</th>
+              <th>Paciente</th>
+              <th>Servicio</th>
+              <th>Estado</th>
+              <th>Monto</th>
+              <th>Fecha</th>
+              <th>Ficha</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (request of latestRequests(); track request.id) {
+              <tr>
+                <td>
+                  <strong>{{ request.requestCode }}</strong>
+                  <small>{{ request.addressText }}</small>
+                </td>
+                <td>{{ request.patientFullName }}</td>
+                <td>{{ request.serviceName }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="statusClass(request.status)">
+                    {{ statusLabel(request.status) }}
+                  </span>
+                </td>
+                <td>S/{{ request.estimatedAmount | number:'1.2-2' }}</td>
+                <td>{{ request.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  @if (request.status === 'FINALIZADO') {
+                    <a class="report-link" [routerLink]="['/attention-report', request.id]">
+                      Abrir ficha
+                    </a>
+                  } @else {
+                    <span class="muted">Pendiente</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
 </section>

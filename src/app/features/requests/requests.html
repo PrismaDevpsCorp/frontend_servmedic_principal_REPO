@@ -63,7 +63,7 @@
               <p><b>Paciente:</b> {{ request.patientFullName }}</p>
               <p><b>Direccion:</b> {{ request.addressText }}</p>
               <p><b>Referencia:</b> {{ request.addressReference || 'Sin referencia' }}</p>
-              <p><b>Monto estimado:</b> {{ request.estimatedAmount | currency:'PEN':'symbol':'1.2-2' }}</p>
+              <p><b>Monto estimado:</b> S/{{ request.estimatedAmount | number:'1.2-2' }}</p>
               <p><b>Notas:</b> {{ request.patientNotes || 'Sin notas' }}</p>
             </div>
 
@@ -117,7 +117,7 @@
                     {{ statusLabel(request.status) }}
                   </span>
                 </td>
-                <td>{{ request.estimatedAmount | currency:'PEN':'symbol':'1.2-2' }}</td>
+                <td>S/{{ request.estimatedAmount | number:'1.2-2' }}</td>
                 <td>{{ request.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td>
                   <div class="row-actions">

@@ -26,6 +26,7 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
   private mapbox?: any;
   private map?: any;
   private marker?: any;
+  private runtimeToken?: string;
 
   mapReady = false;
   statusMessage = 'Seleccione una solicitud para visualizar su ubicacion.';
@@ -91,10 +92,10 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
       return;
     }
 
-    const token = this.getMapboxToken();
+    const token = await this.getMapboxToken();
 
     if (!token) {
-      this.statusMessage = 'Mapa pendiente: configure el token Mapbox en localStorage para visualizar el mapa.';
+      this.statusMessage = 'Mapa pendiente: configure el token Mapbox en el archivo runtime del servidor.';
       this.mapReady = false;
       return;
     }
@@ -155,8 +156,54 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     return this.mapbox;
   }
 
-  private getMapboxToken(): string {
+  private async getMapboxToken(): Promise<string> {
     const localToken = localStorage.getItem('medicdrive_mapbox_token') ?? '';
-    return localToken.trim() || environment.mapboxAccessToken.trim();
+
+    if (localToken.trim()) {
+      return localToken.trim();
+    }
+
+    const environmentToken = environment.mapboxAccessToken?.trim() ?? '';
+
+    if (environmentToken) {
+      return environmentToken;
+    }
+
+    return this.getRuntimeMapboxToken();
+  }
+
+  private async getRuntimeMapboxToken(): Promise<string> {
+    if (this.runtimeToken !== undefined) {
+      return this.runtimeToken;
+    }
+
+    try {
+      const response = await fetch(this.runtimeConfigUrl(), {
+        cache: 'no-store'
+      });
+
+      if (!response.ok) {
+        this.runtimeToken = '';
+        return '';
+      }
+
+      const config = await response.json() as { mapboxAccessToken?: string };
+      this.runtimeToken = (config.mapboxAccessToken ?? '').trim();
+
+      return this.runtimeToken;
+    } catch {
+      this.runtimeToken = '';
+      return '';
+    }
+  }
+
+  private runtimeConfigUrl(): string {
+    const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
+    const normalizedBaseHref = baseHref.endsWith('/') ? baseHref : `${baseHref}/`;
+
+    return new URL(
+      'assets/medicdrive-runtime-config.json',
+      `${window.location.origin}${normalizedBaseHref}`
+    ).toString();
   }
 }

@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Login } from './features/login/login';
 import { Dashboard } from './features/dashboard/dashboard';
 import { Requests } from './features/requests/requests';
+import { MedicalRecords } from './features/medical-records/medical-records';
 import { AttentionReportComponent } from './features/attention-report/attention-report';
 import { SpecialistLayout } from './layout/specialist-layout/specialist-layout';
 import { specialistAuthGuard } from './core/auth/specialist-auth.guard';
@@ -23,6 +24,10 @@ export const routes: Routes = [
       {
         path: 'requests',
         component: Requests
+      },
+      {
+        path: 'medical-records',
+        component: MedicalRecords
       },
       {
         path: 'attention-report',

@@ -4,14 +4,14 @@
       <div class="brand-mark">MD</div>
       <div>
         <strong>MedicDrive</strong>
-        <span>CORE Especialista</span>
+        <span>CORE Servicios</span>
       </div>
     </div>
 
     <nav>
-      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-      <a routerLink="/requests" routerLinkActive="active">Solicitudes</a>
-      <a routerLink="/requests" routerLinkActive="active">Fichas medicas</a>
+      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+      <a routerLink="/requests" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Solicitudes</a>
+      <a routerLink="/medical-records" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Fichas medicas</a>
     </nav>
 
     <div class="specialist-card">

@@ -1,0 +1,101 @@
+<section class="medical-records-page">
+  <div class="page-heading">
+    <div>
+      <p>Fichas medicas</p>
+      <h2>Historial clinico de atenciones</h2>
+      <span>Consulte las fichas generadas a partir de servicios finalizados.</span>
+    </div>
+
+    <button type="button" (click)="loadRecords()" [disabled]="loading()">
+      {{ loading() ? 'Actualizando...' : 'Actualizar' }}
+    </button>
+  </div>
+
+  <div class="summary-grid">
+    <article>
+      <span>Fichas registradas</span>
+      <strong>{{ records().length }}</strong>
+    </article>
+
+    <article>
+      <span>Resultados visibles</span>
+      <strong>{{ filteredRecords().length }}</strong>
+    </article>
+
+    <article>
+      <span>Estado</span>
+      <strong>Finalizadas</strong>
+    </article>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  <div class="filters-card">
+    <div>
+      <p>Busqueda clinica</p>
+      <h3>Filtrar fichas</h3>
+    </div>
+
+    <div class="filters-grid">
+      <label>
+        Buscar
+        <input
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="updateSearchTerm($event)"
+          placeholder="DNI, codigo, paciente, servicio, direccion..."
+        />
+      </label>
+
+      <button type="button" class="secondary-button" (click)="clearSearch()">
+        Limpiar busqueda
+      </button>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">
+      <h3>Fichas disponibles</h3>
+      <span>{{ filteredRecords().length }} de {{ records().length }} registro(s)</span>
+    </div>
+
+    @if (loading()) {
+      <div class="empty-state">Cargando fichas medicas...</div>
+    } @else if (records().length === 0) {
+      <div class="empty-state">Aun no hay fichas medicas registradas.</div>
+    } @else if (filteredRecords().length === 0) {
+      <div class="empty-state">No hay fichas con el filtro aplicado.</div>
+    } @else {
+      <div class="records-grid">
+        @for (record of filteredRecords(); track record.id) {
+          <article class="record-card">
+            <div class="record-header">
+              <div>
+                <span>Solicitud</span>
+                <strong>{{ record.requestCode }}</strong>
+              </div>
+
+              <label>Finalizada</label>
+            </div>
+
+            <div class="record-body">
+              <p><b>Paciente:</b> {{ record.patientFullName }}</p>
+              <p><b>DNI:</b> {{ record.patientDni || 'No registrado' }}</p>
+              <p><b>Servicio:</b> {{ record.serviceName }}</p>
+              <p><b>Direccion:</b> {{ record.addressText }}</p>
+              <p><b>Fecha:</b> {{ record.finishedAt || record.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+
+            <div class="record-actions">
+              <a [routerLink]="['/attention-report', record.id]">
+                Abrir ficha medica
+              </a>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</section>

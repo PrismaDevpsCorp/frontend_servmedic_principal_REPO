@@ -1,0 +1,159 @@
+.patient-requests-page {
+  display: grid;
+  gap: 22px;
+}
+
+.page-heading,
+.filters-card,
+.section-card {
+  border-radius: 24px;
+  padding: 24px;
+  background: white;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.page-heading,
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.page-heading p,
+.filters-card p {
+  margin: 0 0 8px;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.page-heading h2,
+.filters-card h3,
+.section-title h3 {
+  margin: 0;
+  color: #102033;
+}
+
+.page-heading span,
+.section-title span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #14b8a6, #2563eb);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr 220px auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.filters-grid label {
+  display: grid;
+  gap: 8px;
+  color: #102033;
+  font-weight: 900;
+}
+
+.filters-grid input,
+.filters-grid select {
+  border: 1px solid #dbe4ee;
+  border-radius: 16px;
+  padding: 14px 16px;
+  color: #102033;
+  outline: none;
+}
+
+.secondary-button {
+  color: #0f766e;
+  background: #ccfbf1;
+}
+
+.error-message,
+.empty-state {
+  border-radius: 18px;
+  padding: 16px;
+  font-weight: 900;
+}
+
+.error-message {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.empty-state {
+  margin-top: 18px;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 18px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid #edf2f7;
+  padding: 14px;
+  color: #334155;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: #64748b;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+td small {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.status-badge {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: #166534;
+  background: #dcfce7;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+@media (max-width: 900px) {
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-heading,
+  .section-title {
+    flex-direction: column;
+  }
+}

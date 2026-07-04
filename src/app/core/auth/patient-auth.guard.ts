@@ -2,16 +2,16 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 
-export const specialistAuthGuard: CanActivateFn = () => {
+export const patientAuthGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.isSpecialistLoggedIn()) {
+  if (authService.isPatientLoggedIn()) {
     return true;
   }
 
-  if (authService.isPatientLoggedIn()) {
-    return router.createUrlTree(['/patient-dashboard']);
+  if (authService.isSpecialistLoggedIn()) {
+    return router.createUrlTree(['/dashboard']);
   }
 
   return router.createUrlTree(['/login']);

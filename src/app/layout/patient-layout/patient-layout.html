@@ -1,0 +1,36 @@
+<div class="core-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">MD</div>
+      <div>
+        <strong>MedicDrive</strong>
+        <span>Portal Paciente</span>
+      </div>
+    </div>
+
+    <nav>
+      <a routerLink="/patient-dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+      <a routerLink="/patient-requests" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Mis solicitudes</a>
+    </nav>
+
+    <div class="specialist-card">
+      <small>Paciente conectado</small>
+      <strong>{{ session?.fullName || 'Paciente' }}</strong>
+      <span>{{ session?.email }}</span>
+    </div>
+
+    <button class="logout" type="button" (click)="logout()">Cerrar sesion</button>
+  </aside>
+
+  <main class="content">
+    <header class="topbar">
+      <div>
+        <p>Portal paciente</p>
+        <h1>Servicios medicos a domicilio</h1>
+      </div>
+      <span class="status">AWS conectado</span>
+    </header>
+
+    <router-outlet></router-outlet>
+  </main>
+</div>

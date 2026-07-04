@@ -1,0 +1,100 @@
+<section class="patient-requests-page">
+  <div class="page-heading">
+    <div>
+      <p>Mis solicitudes</p>
+      <h2>Historial de servicios solicitados</h2>
+      <span>Consulte el estado y detalle de sus atenciones medicas.</span>
+    </div>
+
+    <button type="button" (click)="load()" [disabled]="loading()">
+      {{ loading() ? 'Actualizando...' : 'Actualizar' }}
+    </button>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  <div class="filters-card">
+    <div>
+      <p>Busqueda</p>
+      <h3>Filtrar solicitudes</h3>
+    </div>
+
+    <div class="filters-grid">
+      <label>
+        Buscar
+        <input
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="updateSearchTerm($event)"
+          placeholder="Codigo, servicio, direccion, estado..."
+        />
+      </label>
+
+      <label>
+        Estado
+        <select [ngModel]="statusFilter()" (ngModelChange)="updateStatusFilter($event)">
+          <option value="ALL">Todos</option>
+          <option value="PENDING">Pendientes</option>
+          <option value="ACCEPTED">Aceptadas</option>
+          <option value="EN_CAMINO">En camino</option>
+          <option value="EN_ATENCION">En atencion</option>
+          <option value="FINALIZADO">Finalizadas</option>
+        </select>
+      </label>
+
+      <button type="button" class="secondary-button" (click)="clearFilters()">
+        Limpiar
+      </button>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">
+      <h3>Solicitudes registradas</h3>
+      <span>{{ filteredRequests().length }} de {{ requests().length }} registro(s)</span>
+    </div>
+
+    @if (loading()) {
+      <div class="empty-state">Cargando solicitudes...</div>
+    } @else if (requests().length === 0) {
+      <div class="empty-state">Aun no tiene solicitudes registradas.</div>
+    } @else if (filteredRequests().length === 0) {
+      <div class="empty-state">No hay resultados con los filtros aplicados.</div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Codigo</th>
+              <th>Servicio</th>
+              <th>Estado</th>
+              <th>Especialista</th>
+              <th>Monto</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (request of filteredRequests(); track request.id) {
+              <tr>
+                <td>
+                  <strong>{{ request.requestCode }}</strong>
+                  <small>{{ request.addressText }}</small>
+                </td>
+                <td>{{ request.serviceName }}</td>
+                <td>
+                  <span class="status-badge">{{ statusLabel(request.status) }}</span>
+                </td>
+                <td>{{ request.acceptedSpecialistFullName || 'Pendiente de asignacion' }}</td>
+                <td>S/{{ (request.estimatedAmount ?? 0) | number:'1.2-2' }}</td>
+                <td>{{ request.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</section>

@@ -2,10 +2,10 @@
   <div class="login-shell">
     <div class="brand-panel">
       <div class="brand-mark">MD</div>
-      <p class="eyebrow">MedicDrive CORE</p>
-      <h1>Gestion medica inteligente para especialistas</h1>
+      <p class="eyebrow">MedicDrive CORE Servicios</p>
+      <h1>Portal operativo para pacientes y especialistas</h1>
       <p class="brand-copy">
-        Administre solicitudes, atenciones, fichas medicas, historial, estadisticas y proximamente pagos desde un unico panel profesional.
+        Solicite servicios medicos, gestione atenciones, revise fichas medicas, historial operativo y seguimiento desde un unico portal profesional.
       </p>
 
       <div class="status-card">
@@ -15,9 +15,27 @@
     </div>
 
     <div class="login-card">
-      <p class="eyebrow">Acceso especialista</p>
+      <p class="eyebrow">{{ accessTitle() }}</p>
       <h2>Iniciar sesion</h2>
-      <p class="muted">Ingrese con su cuenta de especialista MedicDrive.</p>
+      <p class="muted">{{ accessDescription() }}</p>
+
+      <div class="access-switch">
+        <button
+          type="button"
+          [class.active]="accessType === 'ESPECIALISTA'"
+          (click)="selectAccessType('ESPECIALISTA')"
+        >
+          Especialista
+        </button>
+
+        <button
+          type="button"
+          [class.active]="accessType === 'PACIENTE'"
+          (click)="selectAccessType('PACIENTE')"
+        >
+          Paciente
+        </button>
+      </div>
 
       <form (ngSubmit)="login()">
         <label>
@@ -27,7 +45,7 @@
             name="username"
             [(ngModel)]="username"
             autocomplete="username"
-            placeholder="medico.demo@correo.com"
+            placeholder="correo@medicdrive.com"
           />
         </label>
 
@@ -47,7 +65,7 @@
         }
 
         <button type="submit" [disabled]="loading()">
-          {{ loading() ? 'Validando...' : 'Entrar al CORE' }}
+          {{ loading() ? 'Validando...' : 'Entrar al portal' }}
         </button>
       </form>
     </div>

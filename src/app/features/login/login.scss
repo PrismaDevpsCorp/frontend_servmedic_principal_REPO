@@ -171,3 +171,28 @@ button:disabled {
     padding: 30px;
   }
 }
+.access-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 18px 0;
+  padding: 8px;
+  border-radius: 18px;
+  background: #f1f5f9;
+}
+
+.access-switch button {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px;
+  color: #475569;
+  background: transparent;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.access-switch button.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e, #14b8a6, #2563eb);
+  box-shadow: 0 12px 26px rgba(20, 184, 166, 0.24);
+}

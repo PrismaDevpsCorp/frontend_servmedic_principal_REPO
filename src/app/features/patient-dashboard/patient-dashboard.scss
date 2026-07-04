@@ -1,0 +1,134 @@
+.patient-page {
+  display: grid;
+  gap: 22px;
+}
+
+.page-heading,
+.section-card,
+.summary-grid article,
+.request-card {
+  border-radius: 24px;
+  padding: 24px;
+  background: white;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.page-heading,
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.page-heading p {
+  margin: 0 0 8px;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.page-heading h2,
+.section-title h3 {
+  margin: 0;
+  color: #102033;
+}
+
+.page-heading span,
+.section-title span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.page-heading a {
+  border-radius: 999px;
+  padding: 12px 18px;
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #14b8a6, #2563eb);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.summary-grid span {
+  display: block;
+  margin-bottom: 10px;
+  color: #64748b;
+  font-weight: 900;
+}
+
+.summary-grid strong {
+  color: #102033;
+  font-size: 30px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.request-card {
+  display: grid;
+  gap: 8px;
+  box-shadow: none;
+  border: 1px solid #edf2f7;
+}
+
+.request-card strong {
+  color: #102033;
+}
+
+.request-card span,
+.request-card p {
+  margin: 0;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.request-card label {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: #166534;
+  background: #dcfce7;
+  font-weight: 900;
+}
+
+.error-message,
+.empty-state {
+  border-radius: 18px;
+  padding: 16px;
+  font-weight: 900;
+}
+
+.error-message {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.empty-state {
+  margin-top: 18px;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+@media (max-width: 1000px) {
+  .summary-grid,
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-heading,
+  .section-title {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,61 @@
+<section class="patient-page">
+  <div class="page-heading">
+    <div>
+      <p>Inicio paciente</p>
+      <h2>Resumen de servicios MedicDrive</h2>
+      <span>Revise sus solicitudes medicas y el estado de sus atenciones.</span>
+    </div>
+
+    <a routerLink="/patient-requests">Ver mis solicitudes</a>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  <div class="summary-grid">
+    <article>
+      <span>Total solicitudes</span>
+      <strong>{{ total() }}</strong>
+    </article>
+
+    <article>
+      <span>Pendientes</span>
+      <strong>{{ pending() }}</strong>
+    </article>
+
+    <article>
+      <span>Activas</span>
+      <strong>{{ active() }}</strong>
+    </article>
+
+    <article>
+      <span>Finalizadas</span>
+      <strong>{{ finished() }}</strong>
+    </article>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">
+      <h3>Ultimas solicitudes</h3>
+      <span>{{ requests().length }} registro(s)</span>
+    </div>
+
+    @if (loading()) {
+      <div class="empty-state">Cargando informacion...</div>
+    } @else if (requests().length === 0) {
+      <div class="empty-state">Aun no tiene solicitudes registradas.</div>
+    } @else {
+      <div class="cards-grid">
+        @for (request of requests().slice(0, 3); track request.id) {
+          <article class="request-card">
+            <strong>{{ request.requestCode }}</strong>
+            <span>{{ request.serviceName }}</span>
+            <p>{{ request.addressText }}</p>
+            <label>{{ request.status }}</label>
+          </article>
+        }
+      </div>
+    }
+  </div>
+</section>

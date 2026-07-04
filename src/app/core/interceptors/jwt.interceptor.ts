@@ -1,28 +1,49 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
-export const jwtInterceptor: HttpInterceptorFn = (request, next) => {
-  const rawSession = localStorage.getItem('medicdrive_specialist_session');
+interface MedicDriveSession {
+  sessionToken?: string;
+}
 
-  if (!rawSession) {
+export const jwtInterceptor: HttpInterceptorFn = (request, next) => {
+  const token = getSessionToken();
+
+  if (!token) {
     return next(request);
   }
 
-  try {
-    const session = JSON.parse(rawSession);
-    const token = session?.sessionToken;
+  const authenticatedRequest = request.clone({
+    setHeaders: {
+      Authorization: `Bearer ${token}`
+    }
+  });
 
-    if (!token) {
-      return next(request);
+  return next(authenticatedRequest);
+};
+
+function getSessionToken(): string | null {
+  const sessionKeys = [
+    'medicdrive_services_session',
+    'medicdrive_specialist_session'
+  ];
+
+  for (const key of sessionKeys) {
+    const raw = localStorage.getItem(key);
+
+    if (!raw) {
+      continue;
     }
 
-    const authRequest = request.clone({
-      setHeaders: {
-        Authorization: 'Bearer ' + token
-      }
-    });
+    try {
+      const session = JSON.parse(raw) as MedicDriveSession;
+      const token = session.sessionToken?.trim();
 
-    return next(authRequest);
-  } catch {
-    return next(request);
+      if (token) {
+        return token;
+      }
+    } catch {
+      localStorage.removeItem(key);
+    }
   }
-};
+
+  return null;
+}

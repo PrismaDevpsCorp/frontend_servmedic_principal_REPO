@@ -45,18 +45,25 @@
   text-decoration: none;
 }
 
+.map-stats,
 .request-location-summary {
   display: grid;
-  grid-template-columns: 0.8fr 1fr 1.5fr 1fr;
+  grid-template-columns: 0.8fr 0.8fr 2fr;
   gap: 14px;
 }
 
+.request-location-summary {
+  grid-template-columns: 0.8fr 1fr 1.5fr 1fr;
+}
+
+.map-stats div,
 .request-location-summary div {
   border-radius: 18px;
   padding: 14px;
   background: #f8fafc;
 }
 
+.map-stats span,
 .request-location-summary span,
 .request-location-summary small {
   display: block;
@@ -64,6 +71,7 @@
   font-weight: 800;
 }
 
+.map-stats span,
 .request-location-summary span {
   margin-bottom: 6px;
   font-size: 11px;
@@ -71,6 +79,7 @@
   text-transform: uppercase;
 }
 
+.map-stats strong,
 .request-location-summary strong {
   display: block;
   color: #102033;
@@ -83,7 +92,7 @@
 .map-frame {
   position: relative;
   overflow: hidden;
-  min-height: 360px;
+  min-height: 420px;
   border-radius: 22px;
   background: linear-gradient(135deg, #e0f2fe, #ccfbf1);
 }
@@ -114,7 +123,69 @@
   font-weight: 800;
 }
 
+.map-help {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  font-weight: 900;
+}
+
+.map-help small {
+  margin-left: auto;
+}
+
+.legend-dot {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  color: white;
+  font-size: 13px;
+  font-weight: 1000;
+}
+
+.legend-dot.doctor {
+  background: #1d4ed8;
+}
+
+.legend-dot.service {
+  background: #0f766e;
+}
+
+:host ::ng-deep .service-request-marker,
+:host ::ng-deep .doctor-location-marker {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 3px solid white;
+  border-radius: 999px;
+  color: white;
+  font-size: 15px;
+  font-weight: 1000;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.28);
+  cursor: pointer;
+}
+
+:host ::ng-deep .service-request-marker {
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
+}
+
+:host ::ng-deep .service-request-marker.selected {
+  width: 46px;
+  height: 46px;
+  background: linear-gradient(135deg, #dc2626, #f97316);
+}
+
+:host ::ng-deep .doctor-location-marker {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+}
+
 @media (max-width: 1100px) {
+  .map-stats,
   .request-location-summary {
     grid-template-columns: 1fr 1fr;
   }
@@ -125,11 +196,17 @@
     flex-direction: column;
   }
 
+  .map-stats,
   .request-location-summary {
     grid-template-columns: 1fr;
   }
 
   .map-frame {
-    min-height: 300px;
+    min-height: 320px;
+  }
+
+  .map-help small {
+    margin-left: 0;
+    width: 100%;
   }
 }

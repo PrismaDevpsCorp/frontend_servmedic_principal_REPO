@@ -1,0 +1,134 @@
+<section class="create-request-page">
+  <div class="page-heading">
+    <div>
+      <p>Solicitar servicio</p>
+      <h2>Nueva solicitud medica a domicilio</h2>
+      <span>Complete los datos para crear una solicitud que sera visible para especialistas disponibles.</span>
+    </div>
+
+    <a routerLink="/patient-requests">Ver mis solicitudes</a>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-message">{{ errorMessage() }}</div>
+  }
+
+  @if (successMessage()) {
+    <div class="success-message">{{ successMessage() }}</div>
+  }
+
+  <form class="form-card" (ngSubmit)="createRequest()">
+    <div class="section-title">
+      <h3>Datos del servicio</h3>
+      <span>{{ loadingCatalog() ? 'Cargando catalogo...' : services().length + ' servicio(s)' }}</span>
+    </div>
+
+    <div class="form-grid">
+      <label class="full">
+        Servicio medico
+        <select name="serviceCode" [(ngModel)]="serviceCode" [disabled]="loadingCatalog() || saving()">
+          @for (service of services(); track service.code) {
+            <option [value]="service.code">
+              {{ service.name }} - {{ service.professionName || service.professionCode || 'Especialidad' }}
+            </option>
+          }
+        </select>
+      </label>
+
+      @if (selectedService()) {
+        <div class="service-preview full">
+          <strong>{{ selectedService()?.name }}</strong>
+          <span>{{ selectedService()?.professionName || selectedService()?.professionCode }}</span>
+          <p>{{ selectedService()?.description || 'Servicio medico disponible para solicitud a domicilio.' }}</p>
+          @if (selectedService()?.requiresPrescription) {
+            <label>Requiere receta</label>
+          }
+        </div>
+      }
+
+      <label class="full">
+        Direccion de atencion
+        <input
+          type="text"
+          name="addressText"
+          [(ngModel)]="addressText"
+          placeholder="Ejemplo: Av. Javier Prado 456, San Isidro, Lima"
+          [disabled]="saving()"
+        />
+      </label>
+
+      <label class="full">
+        Referencia
+        <input
+          type="text"
+          name="addressReference"
+          [(ngModel)]="addressReference"
+          placeholder="Ejemplo: puerta principal, piso 3, frente a farmacia..."
+          [disabled]="saving()"
+        />
+      </label>
+
+      <label>
+        Latitud
+        <input
+          type="number"
+          step="0.0000001"
+          name="latitude"
+          [(ngModel)]="latitude"
+          [disabled]="saving()"
+        />
+      </label>
+
+      <label>
+        Longitud
+        <input
+          type="number"
+          step="0.0000001"
+          name="longitude"
+          [(ngModel)]="longitude"
+          [disabled]="saving()"
+        />
+      </label>
+
+      <div class="location-actions full">
+        <button type="button" class="secondary-button" (click)="useBrowserLocation()" [disabled]="saving()">
+          Usar mi ubicacion actual
+        </button>
+
+        <small>
+          Para pruebas dejamos coordenadas iniciales de Lima. En produccion se integrara seleccion directa desde mapa.
+        </small>
+      </div>
+
+      <label class="full">
+        URL de receta o imagen
+        <input
+          type="text"
+          name="prescriptionImageUrl"
+          [(ngModel)]="prescriptionImageUrl"
+          placeholder="Opcional por ahora"
+          [disabled]="saving()"
+        />
+      </label>
+
+      <label class="full">
+        Notas para el especialista
+        <textarea
+          name="patientNotes"
+          [(ngModel)]="patientNotes"
+          rows="4"
+          placeholder="Describa sintomas, indicaciones o detalles importantes..."
+          [disabled]="saving()"
+        ></textarea>
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <a routerLink="/patient-dashboard">Cancelar</a>
+
+      <button type="submit" [disabled]="saving() || loadingCatalog()">
+        {{ saving() ? 'Creando solicitud...' : 'Crear solicitud medica' }}
+      </button>
+    </div>
+  </form>
+</section>

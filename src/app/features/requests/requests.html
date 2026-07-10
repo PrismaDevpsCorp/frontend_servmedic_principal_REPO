@@ -48,7 +48,7 @@
     } @else {
       <div class="cards-grid">
         @for (request of pendingRequests(); track request.id) {
-          <article class="request-card">
+          <article class="request-card" [class.selected-map-card]="isSelectedMapRequest(request)">
             <div class="request-top">
               <div>
                 <strong>{{ request.requestCode }}</strong>
@@ -121,7 +121,11 @@
     </div>
   </div>
 
-  <app-request-location-map [request]="selectedMapRequest()"></app-request-location-map>
+  <app-request-location-map
+    [requests]="pendingRequests()"
+    [selectedRequest]="selectedMapRequest()"
+    (requestSelected)="selectMapRequest($event)">
+  </app-request-location-map>
 
   <div class="section-card">
     <div class="section-title">

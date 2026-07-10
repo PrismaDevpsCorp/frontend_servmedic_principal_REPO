@@ -6,6 +6,7 @@ import { MedicalRecords } from './features/medical-records/medical-records';
 import { AttentionReportComponent } from './features/attention-report/attention-report';
 import { PatientDashboard } from './features/patient-dashboard/patient-dashboard';
 import { PatientRequests } from './features/patient-requests/patient-requests';
+import { PatientCreateRequest } from './features/patient-create-request/patient-create-request';
 import { SpecialistLayout } from './layout/specialist-layout/specialist-layout';
 import { PatientLayout } from './layout/patient-layout/patient-layout';
 import { specialistAuthGuard } from './core/auth/specialist-auth.guard';
@@ -81,6 +82,17 @@ export const routes: Routes = [
       {
         path: '',
         component: PatientDashboard
+      }
+    ]
+  },
+  {
+    path: 'patient-create-request',
+    component: PatientLayout,
+    canActivate: [patientAuthGuard],
+    children: [
+      {
+        path: '',
+        component: PatientCreateRequest
       }
     ]
   },

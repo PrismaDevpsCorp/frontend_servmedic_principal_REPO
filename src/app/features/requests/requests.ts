@@ -64,7 +64,7 @@ export class Requests {
         this.requestService.listAssigned().subscribe({
           next: (assigned) => {
             this.assignedRequests.set(assigned);
-            this.ensureSelectedMapRequest(assigned);
+            this.ensureSelectedMapRequest(pending, assigned);
             this.loading.set(false);
           },
           error: () => {
@@ -95,6 +95,10 @@ export class Requests {
 
   selectMapRequest(request: MedicalRequest): void {
     this.selectedMapRequest.set(request);
+  }
+
+  isSelectedMapRequest(request: MedicalRequest): boolean {
+    return this.selectedMapRequest()?.id === request.id;
   }
 
   hasCoordinates(request: MedicalRequest): boolean {
@@ -166,15 +170,18 @@ export class Requests {
       });
   }
 
-  private ensureSelectedMapRequest(assigned: MedicalRequest[]): void {
+  private ensureSelectedMapRequest(pending: MedicalRequest[], assigned: MedicalRequest[]): void {
     const current = this.selectedMapRequest();
+    const visibleRequests = [...pending, ...assigned];
 
-    if (current && assigned.some((item) => item.id === current.id)) {
+    if (current && visibleRequests.some((item) => item.id === current.id && this.hasCoordinates(item))) {
       return;
     }
 
-    const firstWithLocation = assigned.find((item) => this.hasCoordinates(item));
-    this.selectedMapRequest.set(firstWithLocation ?? null);
+    const firstPendingWithLocation = pending.find((item) => this.hasCoordinates(item));
+    const firstAssignedWithLocation = assigned.find((item) => this.hasCoordinates(item));
+
+    this.selectedMapRequest.set(firstPendingWithLocation ?? firstAssignedWithLocation ?? null);
   }
 
   private matchesSearch(request: MedicalRequest, search: string): boolean {

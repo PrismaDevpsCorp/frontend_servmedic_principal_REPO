@@ -2,34 +2,53 @@
   <div class="map-heading">
     <div>
       <p>Mapa operativo</p>
-      <h3>Ubicacion de atencion</h3>
-      <span>Visualizacion geografica de la solicitud seleccionada.</span>
+      <h3>Solicitudes pendientes cercanas</h3>
+      <span>
+        Visualice todas las solicitudes pendientes y seleccione una desde el mapa.
+      </span>
     </div>
 
-    @if (request && hasCoordinates()) {
+    @if (selectedRequest && hasCoordinates(selectedRequest)) {
       <a [href]="externalMapUrl()" target="_blank" rel="noopener noreferrer">
         Abrir mapa externo
       </a>
     }
   </div>
 
-  @if (request) {
+  <div class="map-stats">
+    <div>
+      <span>Solicitudes pendientes</span>
+      <strong>{{ requests.length }}</strong>
+    </div>
+
+    <div>
+      <span>Con ubicacion</span>
+      <strong>{{ pendingWithCoordinates().length }}</strong>
+    </div>
+
+    <div>
+      <span>Referencia</span>
+      <strong>{{ locationMessage }}</strong>
+    </div>
+  </div>
+
+  @if (selectedRequest) {
     <div class="request-location-summary">
       <div>
-        <span>Solicitud</span>
-        <strong>{{ request.requestCode }}</strong>
+        <span>Solicitud seleccionada</span>
+        <strong>{{ selectedRequest.requestCode }}</strong>
       </div>
 
       <div>
         <span>Paciente</span>
-        <strong>{{ request.patientFullName }}</strong>
-        <small>DNI: {{ request.patientDni || 'No registrado' }}</small>
+        <strong>{{ selectedRequest.patientFullName }}</strong>
+        <small>DNI: {{ selectedRequest.patientDni || 'No registrado' }}</small>
       </div>
 
       <div>
         <span>Direccion</span>
-        <strong>{{ request.addressText }}</strong>
-        <small>{{ request.addressReference || 'Sin referencia' }}</small>
+        <strong>{{ selectedRequest.addressText }}</strong>
+        <small>{{ selectedRequest.addressReference || 'Sin referencia' }}</small>
       </div>
 
       <div>
@@ -52,4 +71,16 @@
       </div>
     }
   </div>
+
+  @if (pendingWithCoordinates().length > 0) {
+    <div class="map-help">
+      <span class="legend-dot doctor">+</span>
+      <span>Medico</span>
+
+      <span class="legend-dot service">S</span>
+      <span>Solicitud pendiente</span>
+
+      <small>Haga clic sobre un marcador S para cargar la solicitud.</small>
+    </div>
+  }
 </section>

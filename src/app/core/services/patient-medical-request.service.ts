@@ -4,6 +4,16 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { MedicalRequest } from '../models/medical-request.model';
 
+export interface CreatePatientMedicalRequestPayload {
+  serviceCode: string;
+  addressText: string;
+  addressReference?: string | null;
+  latitude: number;
+  longitude: number;
+  prescriptionImageUrl?: string | null;
+  patientNotes?: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -24,5 +34,9 @@ export class PatientMedicalRequestService {
 
   findById(id: number): Observable<MedicalRequest> {
     return this.http.get<MedicalRequest>(this.baseUrl + '/' + id);
+  }
+
+  create(payload: CreatePatientMedicalRequestPayload): Observable<MedicalRequest> {
+    return this.http.post<MedicalRequest>(this.baseUrl, payload);
   }
 }

@@ -200,9 +200,17 @@
                     }
 
                     @if (request.status === 'FINALIZADO') {
-                      <a class="report-link" [routerLink]="['/attention-report', request.id]">
-                        Abrir ficha
-                      </a>
+                      <div class="report-action">
+                        <a class="report-link" [routerLink]="['/attention-report', request.id]">
+                          Abrir ficha
+                        </a>
+
+                        @if (isReportPending(request.id)) {
+                          <span class="report-pending">
+                            Ficha pendiente
+                          </span>
+                        }
+                      </div>
                     }
                   </div>
                 </td>

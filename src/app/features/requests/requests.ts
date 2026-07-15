@@ -2,10 +2,13 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Observable, finalize } from 'rxjs';
+import { Observable, catchError, finalize, forkJoin, map, of } from 'rxjs';
 import { MedicalRequest } from '../../core/models/medical-request.model';
+import { AttentionReportService } from '../../core/services/attention-report.service';
 import { SpecialistMedicalRequestService } from '../../core/services/specialist-medical-request.service';
 import { RequestLocationMap } from './request-location-map/request-location-map';
+
+type ReportCompletionStatus = 'LOADING' | 'PENDING' | 'COMPLETE' | 'ERROR';
 
 @Component({
   selector: 'app-requests',
@@ -15,6 +18,7 @@ import { RequestLocationMap } from './request-location-map/request-location-map'
 })
 export class Requests {
   private readonly requestService = inject(SpecialistMedicalRequestService);
+  private readonly attentionReportService = inject(AttentionReportService);
 
   pendingRequests = signal<MedicalRequest[]>([]);
   assignedRequests = signal<MedicalRequest[]>([]);
@@ -26,6 +30,7 @@ export class Requests {
   loading = signal(false);
   actionLoadingId = signal<number | null>(null);
   errorMessage = signal('');
+  reportStatusByRequestId = signal<Record<number, ReportCompletionStatus>>({});
 
   totalRequests = computed(() => this.pendingRequests().length + this.assignedRequests().length);
 
@@ -64,6 +69,7 @@ export class Requests {
         this.requestService.listAssigned().subscribe({
           next: (assigned) => {
             this.assignedRequests.set(assigned);
+            this.loadAttentionReportStatuses(assigned);
             this.ensureSelectedMapRequest(pending, assigned);
             this.loading.set(false);
           },
@@ -101,6 +107,10 @@ export class Requests {
     return this.selectedMapRequest()?.id === request.id;
   }
 
+
+  isReportPending(requestId: number): boolean {
+    return this.reportStatusByRequestId()[requestId] === 'PENDING';
+  }
   hasCoordinates(request: MedicalRequest): boolean {
     return request.latitude !== null
       && request.latitude !== undefined
@@ -184,6 +194,56 @@ export class Requests {
     this.selectedMapRequest.set(firstPendingWithLocation ?? firstAssignedWithLocation ?? null);
   }
 
+
+  private loadAttentionReportStatuses(requests: MedicalRequest[]): void {
+    const finalized = requests.filter((request) => request.status === 'FINALIZADO');
+
+    const loadingStatuses = finalized.reduce<Record<number, ReportCompletionStatus>>(
+      (statuses, request) => {
+        statuses[request.id] = 'LOADING';
+        return statuses;
+      },
+      {}
+    );
+
+    this.reportStatusByRequestId.set(loadingStatuses);
+
+    if (finalized.length === 0) {
+      return;
+    }
+
+    const checks = finalized.map((request) =>
+      this.attentionReportService.findByMedicalRequestId(request.id).pipe(
+        map((report) => {
+          const isComplete =
+            !!report
+            && !!report.clinicalObservations?.trim()
+            && !!report.recommendations?.trim();
+
+          return {
+            requestId: request.id,
+            status: (isComplete ? 'COMPLETE' : 'PENDING') as ReportCompletionStatus
+          };
+        }),
+        catchError(() =>
+          of({
+            requestId: request.id,
+            status: 'ERROR' as ReportCompletionStatus
+          })
+        )
+      )
+    );
+
+    forkJoin(checks).subscribe((results) => {
+      const statuses: Record<number, ReportCompletionStatus> = {};
+
+      for (const result of results) {
+        statuses[result.requestId] = result.status;
+      }
+
+      this.reportStatusByRequestId.set(statuses);
+    });
+  }
   private matchesSearch(request: MedicalRequest, search: string): boolean {
     const values = [
       request.requestCode,

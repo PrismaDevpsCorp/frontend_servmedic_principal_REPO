@@ -63,6 +63,21 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     return this.requests.filter((request) => this.hasCoordinates(request));
   }
 
+
+  visibleRequestsWithCoordinates(): MedicalRequest[] {
+    const visibleRequests = [...this.pendingWithCoordinates()];
+    const selected = this.selectedRequest;
+
+    if (
+      selected
+      && this.hasCoordinates(selected)
+      && !visibleRequests.some((request) => request.id === selected.id)
+    ) {
+      visibleRequests.push(selected);
+    }
+
+    return visibleRequests;
+  }
   hasCoordinates(request?: MedicalRequest | null): boolean {
     return request?.latitude !== null
       && request?.latitude !== undefined
@@ -102,7 +117,7 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
       return;
     }
 
-    const locatedRequests = this.pendingWithCoordinates();
+    const locatedRequests = this.visibleRequestsWithCoordinates();
 
     if (locatedRequests.length === 0) {
       this.statusMessage = 'No hay solicitudes pendientes con coordenadas para mostrar en el mapa.';

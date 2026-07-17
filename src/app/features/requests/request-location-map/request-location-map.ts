@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -34,7 +35,13 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
 
   @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
 
+  constructor(private readonly cdr: ChangeDetectorRef) {}
+
   private readonly locationModeStorageKey = 'medicdrive_specialist_location_mode';
+
+  private renderRequestId = 0;
+  private locationAttemptId = 0;
+  private realLocationPromise?: Promise<DoctorLocation | null>;
 
   private readonly demoLocations: Record<
     Exclude<DoctorLocationMode, 'REAL'>,
@@ -132,37 +139,89 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     return labels[this.locationMode];
   }
 
+
+  isRealLocationBlockedByHttp(): boolean {
+    const isLocalhost =
+      window.location.hostname === 'localhost'
+      || window.location.hostname === '127.0.0.1';
+
+    return this.locationMode === 'REAL'
+      && !window.isSecureContext
+      && !isLocalhost;
+  }
+
+  hasLocationWarning(): boolean {
+    const waitingMessages = [
+      'Ubicacion del especialista pendiente de obtener.',
+      'Actualizando ubicacion del especialista...'
+    ];
+
+    return this.locationMode === 'REAL'
+      && !this.locationLoading
+      && !this.doctorLocation
+      && !waitingMessages.includes(this.locationMessage);
+  }
   changeLocationMode(value: string): void {
     if (!this.isValidLocationMode(value)) {
       return;
     }
 
+    this.locationAttemptId++;
+    this.locationLoading = false;
+
     this.locationMode = value;
     this.saveLocationMode(value);
     this.resetDoctorLocation();
 
-    this.locationMessage = 'Actualizando ubicacion del especialista...';
+    if (value === 'DEMO_HUARAZ') {
+      this.locationMessage = 'Modo demo Huaraz activo.';
+    } else if (value === 'DEMO_LIMA') {
+      this.locationMessage = 'Modo demo Lima activo.';
+    } else if (this.isRealLocationBlockedByHttp()) {
+      this.locationMessage =
+        'La ubicacion real no esta disponible por HTTP. Active HTTPS o seleccione Demo Huaraz o Demo Lima.';
+    } else {
+      this.locationMessage =
+        'Solicitando ubicacion real al navegador...';
+    }
+
+    this.cdr.detectChanges();
     this.renderOrUpdateMap();
   }
-
   refreshDoctorLocation(): void {
+    this.locationAttemptId++;
+    this.locationLoading = false;
     this.resetDoctorLocation();
-    this.locationMessage = 'Actualizando ubicacion del especialista...';
+
+    if (this.locationMode === 'DEMO_HUARAZ') {
+      this.locationMessage = 'Modo demo Huaraz activo.';
+    } else if (this.locationMode === 'DEMO_LIMA') {
+      this.locationMessage = 'Modo demo Lima activo.';
+    } else if (this.isRealLocationBlockedByHttp()) {
+      this.locationMessage =
+        'La ubicacion real no esta disponible por HTTP. Active HTTPS o seleccione un modo demo.';
+    } else {
+      this.locationMessage =
+        'Solicitando ubicacion real al navegador...';
+    }
+
+    this.cdr.detectChanges();
     this.renderOrUpdateMap();
   }
-
   selectRequest(request: MedicalRequest): void {
     this.requestSelected.emit(request);
     this.flyToRequest(request);
   }
 
   private renderOrUpdateMap(): void {
+    const renderId = ++this.renderRequestId;
+
     setTimeout(() => {
-      void this.renderMapAsync();
+      void this.renderMapAsync(renderId);
     });
   }
 
-  private async renderMapAsync(): Promise<void> {
+  private async renderMapAsync(renderId: number): Promise<void> {
     if (!this.mapContainer?.nativeElement) {
       return;
     }
@@ -187,6 +246,10 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     mapbox.accessToken = token;
 
     const center = await this.resolveInitialCenter(locatedRequests);
+
+    if (renderId !== this.renderRequestId) {
+      return;
+    }
 
     if (!this.map) {
       this.map = new mapbox.Map({
@@ -227,7 +290,12 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
         ? this.selectedRequest
         : requests[0];
 
-    if (!this.locationMessage.includes('HTTPS')) {
+    const locationStillWaiting =
+      this.locationMessage.includes('pendiente de obtener')
+      || this.locationMessage.includes('Actualizando ubicacion')
+      || this.locationMessage.includes('Solicitando ubicacion');
+
+    if (locationStillWaiting) {
       this.locationMessage =
         'No se pudo obtener la ubicacion real. Se uso una solicitud como referencia.';
     }
@@ -256,8 +324,16 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
       return Promise.resolve(this.doctorLocation);
     }
 
+    if (this.realLocationPromise) {
+      return this.realLocationPromise;
+    }
+
     if (!navigator.geolocation) {
-      this.locationMessage = 'El navegador no permite obtener la ubicacion.';
+      this.locationLoading = false;
+      this.locationMessage =
+        'El navegador no permite obtener la ubicacion del especialista.';
+      this.cdr.detectChanges();
+
       return Promise.resolve(null);
     }
 
@@ -266,33 +342,83 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
       || window.location.hostname === '127.0.0.1';
 
     if (!window.isSecureContext && !isLocalhost) {
+      this.locationLoading = false;
       this.locationMessage =
-        'La ubicacion real requiere HTTPS. Use un modo demo hasta activar SSL.';
+        'La ubicacion real no esta disponible por HTTP. Active HTTPS o seleccione Demo Huaraz o Demo Lima.';
+      this.cdr.detectChanges();
+
       return Promise.resolve(null);
     }
 
     this.locationLoading = true;
+    this.locationMessage = 'Solicitando ubicacion real al navegador...';
+    this.cdr.detectChanges();
 
-    return new Promise((resolve) => {
+    const attemptId = ++this.locationAttemptId;
+
+    this.realLocationPromise = new Promise<DoctorLocation | null>((resolve) => {
+      let completed = false;
+
+      const safetyTimer = window.setTimeout(() => {
+        finish(
+          null,
+          'La ubicacion esta tardando demasiado. Verifique el permiso de Chrome o seleccione un modo demo.'
+        );
+      }, 12000);
+
+      const finish = (
+        location: DoctorLocation | null,
+        message: string
+      ): void => {
+        if (completed) {
+          return;
+        }
+
+        completed = true;
+        window.clearTimeout(safetyTimer);
+
+        if (
+          attemptId !== this.locationAttemptId
+          || this.locationMode !== 'REAL'
+        ) {
+          resolve(null);
+          return;
+        }
+
+        this.locationLoading = false;
+        this.locationMessage = message;
+        this.realLocationPromise = undefined;
+
+        if (location) {
+          this.doctorLocation = location;
+        }
+
+        this.cdr.detectChanges();
+        resolve(location);
+      };
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          this.locationLoading = false;
-
-          this.doctorLocation = {
-            latitude: Number(position.coords.latitude.toFixed(7)),
-            longitude: Number(position.coords.longitude.toFixed(7))
+          finish(
+            {
+              latitude: Number(position.coords.latitude.toFixed(7)),
+              longitude: Number(position.coords.longitude.toFixed(7))
+            },
+            'Mapa referenciado desde la ubicacion real del especialista.'
+          );
+        },
+        (error) => {
+          const messages: Record<number, string> = {
+            1: 'Chrome denego el permiso de ubicacion. Habilitelo o seleccione un modo demo.',
+            2: 'La ubicacion real no esta disponible en este momento.',
+            3: 'Se agoto el tiempo para obtener la ubicacion real.'
           };
 
-          this.locationMessage =
-            'Mapa referenciado desde la ubicacion real del especialista.';
-
-          resolve(this.doctorLocation);
-        },
-        () => {
-          this.locationLoading = false;
-          this.locationMessage =
-            'No se pudo obtener la ubicacion real del especialista.';
-          resolve(null);
+          finish(
+            null,
+            messages[error.code]
+              ?? 'No se pudo obtener la ubicacion real del especialista.'
+          );
         },
         {
           enableHighAccuracy: true,
@@ -301,8 +427,9 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
         }
       );
     });
-  }
 
+    return this.realLocationPromise;
+  }
   private drawMarkers(mapbox: any, requests: MedicalRequest[]): void {
     this.clearRequestMarkers();
 
@@ -444,6 +571,7 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
 
   private resetDoctorLocation(): void {
     this.doctorLocation = undefined;
+    this.realLocationPromise = undefined;
     this.doctorMarker?.remove();
     this.doctorMarker = undefined;
   }

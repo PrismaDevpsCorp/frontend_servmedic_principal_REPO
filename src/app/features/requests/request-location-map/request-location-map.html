@@ -36,8 +36,7 @@
 
         <select
           [value]="locationMode"
-          (change)="changeLocationMode($any($event.target).value)"
-          [disabled]="locationLoading">
+          (change)="changeLocationMode($any($event.target).value)">
           <option value="REAL">Ubicacion real</option>
           <option value="DEMO_HUARAZ">Demo Huaraz</option>
           <option value="DEMO_LIMA">Demo Lima</option>
@@ -73,7 +72,19 @@
     </div>
   </div>
 
-  <div class="map-stats">
+  
+  <div
+    class="location-runtime-message"
+    [class.warning]="hasLocationWarning()">
+    <strong>
+      {{ hasLocationWarning()
+        ? 'Ubicacion real no disponible'
+        : 'Estado de ubicacion' }}
+    </strong>
+
+    <span>{{ locationMessage }}</span>
+  </div>
+<div class="map-stats">
     <div>
       <span>Solicitudes pendientes</span>
       <strong>{{ requests.length }}</strong>

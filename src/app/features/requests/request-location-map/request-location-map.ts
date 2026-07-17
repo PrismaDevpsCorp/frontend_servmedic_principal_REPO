@@ -22,6 +22,23 @@ export interface SpecialistMapLocation {
 
 type DoctorLocation = SpecialistMapLocation;
 
+interface DirectionsRouteGeometry {
+  type: 'LineString';
+  coordinates: number[][];
+}
+
+interface DirectionsRoute {
+  distance: number;
+  duration: number;
+  geometry: DirectionsRouteGeometry;
+}
+
+interface DirectionsResponse {
+  code?: string;
+  message?: string;
+  routes?: DirectionsRoute[];
+}
+
 type DoctorLocationMode = 'REAL' | 'DEMO_HUARAZ' | 'DEMO_LIMA';
 
 @Component({
@@ -70,6 +87,20 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
   private runtimeToken?: string;
   private doctorLocation?: DoctorLocation;
 
+  private readonly routeSourceId = 'medicdrive-selected-route-source';
+  private readonly routeLayerId = 'medicdrive-selected-route-layer';
+
+  private routeGeometry?: DirectionsRouteGeometry;
+  private routeAbortController?: AbortController;
+  private routeRequestId = 0;
+
+  routeLoading = false;
+  routeError = false;
+  routeDistanceMeters: number | null = null;
+  routeDurationSeconds: number | null = null;
+  routeMessage =
+    'Seleccione una solicitud y defina la ubicacion del especialista para calcular la ruta.';
+
   locationMode: DoctorLocationMode = this.readStoredLocationMode();
   locationLoading = false;
   mapReady = false;
@@ -82,6 +113,29 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    const selectedChange = changes['selectedRequest'];
+
+    if (selectedChange && !selectedChange.firstChange) {
+      const previousRequest =
+        selectedChange.previousValue as MedicalRequest | null;
+      const currentRequest =
+        selectedChange.currentValue as MedicalRequest | null;
+
+      const previousEndpoint = previousRequest
+        ? `${previousRequest.id}|${previousRequest.latitude}|${previousRequest.longitude}`
+        : '';
+
+      const currentEndpoint = currentRequest
+        ? `${currentRequest.id}|${currentRequest.latitude}|${currentRequest.longitude}`
+        : '';
+
+      if (previousEndpoint !== currentEndpoint) {
+        this.clearCalculatedRoute(
+          'La ruta anterior se limpio porque cambio la solicitud seleccionada.'
+        );
+      }
+    }
+
     if (
       changes['requests']
       || changes['selectedRequest']
@@ -90,13 +144,15 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
       this.renderOrUpdateMap();
     }
   }
-
   ngOnDestroy(): void {
+    this.routeRequestId++;
+    this.routeAbortController?.abort();
+    this.clearRouteLayer();
+
     this.clearRequestMarkers();
     this.doctorMarker?.remove();
     this.map?.remove();
   }
-
   pendingWithCoordinates(): MedicalRequest[] {
     return this.requests.filter((request) => this.hasCoordinates(request));
   }
@@ -223,6 +279,216 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     this.flyToRequest(request);
   }
 
+  canCalculateRoute(): boolean {
+    return Boolean(
+      !this.routeLoading
+      && this.mapReady
+      && this.map
+      && this.doctorLocation
+      && this.selectedRequest
+      && this.hasCoordinates(this.selectedRequest)
+    );
+  }
+
+  routeButtonLabel(): string {
+    if (this.routeLoading) {
+      return 'Calculando ruta...';
+    }
+
+    return this.routeGeometry
+      ? 'Actualizar ruta'
+      : 'Calcular ruta';
+  }
+
+  hasCalculatedRoute(): boolean {
+    return Boolean(
+      this.routeGeometry
+      && this.routeDistanceMeters !== null
+      && this.routeDurationSeconds !== null
+    );
+  }
+
+  routeDistanceLabel(): string {
+    const distance = this.routeDistanceMeters;
+
+    if (distance === null) {
+      return 'Sin calcular';
+    }
+
+    if (distance < 1000) {
+      return `${Math.round(distance)} m`;
+    }
+
+    return `${(distance / 1000).toFixed(1)} km`;
+  }
+
+  routeDurationLabel(): string {
+    const duration = this.routeDurationSeconds;
+
+    if (duration === null) {
+      return 'Sin calcular';
+    }
+
+    const totalMinutes = Math.max(1, Math.round(duration / 60));
+
+    if (totalMinutes < 60) {
+      return `${totalMinutes} min`;
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    return minutes > 0
+      ? `${hours} h ${minutes} min`
+      : `${hours} h`;
+  }
+
+  async calculateOrUpdateRoute(): Promise<void> {
+    if (this.routeLoading) {
+      return;
+    }
+
+    const origin = this.doctorLocation;
+    const destination = this.selectedRequest;
+
+    if (
+      !origin
+      || !destination
+      || !this.hasCoordinates(destination)
+    ) {
+      this.routeError = true;
+      this.routeMessage =
+        'No se puede calcular la ruta sin origen y destino validos.';
+      return;
+    }
+
+    const destinationLatitude = Number(destination.latitude);
+    const destinationLongitude = Number(destination.longitude);
+
+    if (
+      !Number.isFinite(destinationLatitude)
+      || !Number.isFinite(destinationLongitude)
+    ) {
+      this.routeError = true;
+      this.routeMessage =
+        'Las coordenadas de la solicitud seleccionada no son validas.';
+      return;
+    }
+
+    const requestId = ++this.routeRequestId;
+
+    this.routeAbortController?.abort();
+
+    const abortController = new AbortController();
+    this.routeAbortController = abortController;
+
+    this.routeLoading = true;
+    this.routeError = false;
+    this.routeMessage =
+      'Calculando distancia por carretera y tiempo estimado...';
+
+    this.cdr.detectChanges();
+
+    try {
+      const token = await this.getMapboxToken();
+
+      if (requestId !== this.routeRequestId) {
+        return;
+      }
+
+      if (!token) {
+        throw new Error(
+          'No se encontro el token Mapbox configurado para calcular la ruta.'
+        );
+      }
+
+      const coordinates =
+        `${origin.longitude},${origin.latitude};`
+        + `${destinationLongitude},${destinationLatitude}`;
+
+      const query = new URLSearchParams({
+        alternatives: 'false',
+        geometries: 'geojson',
+        overview: 'full',
+        steps: 'false',
+        access_token: token
+      });
+
+      const endpoint =
+        `https://api.mapbox.com/directions/v5/mapbox/driving/`
+        + `${coordinates}?${query.toString()}`;
+
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        cache: 'no-store',
+        signal: abortController.signal
+      });
+
+      const payload = await response.json() as DirectionsResponse;
+
+      if (requestId !== this.routeRequestId) {
+        return;
+      }
+
+      const route = payload.routes?.[0];
+
+      if (!response.ok || !route) {
+        throw new Error(
+          payload.message
+          || 'Mapbox no devolvio una ruta disponible.'
+        );
+      }
+
+      const distance = Number(route.distance);
+      const duration = Number(route.duration);
+
+      if (
+        !Number.isFinite(distance)
+        || !Number.isFinite(duration)
+        || route.geometry?.type !== 'LineString'
+        || !Array.isArray(route.geometry.coordinates)
+        || route.geometry.coordinates.length < 2
+      ) {
+        throw new Error(
+          'La respuesta de Mapbox no contiene una ruta valida.'
+        );
+      }
+
+      this.routeDistanceMeters = distance;
+      this.routeDurationSeconds = duration;
+      this.routeGeometry = route.geometry;
+
+      this.routeError = false;
+      this.routeMessage =
+        `Ruta calculada: ${this.routeDistanceLabel()}`
+        + ` y ${this.routeDurationLabel()} aproximadamente.`;
+
+      this.drawCalculatedRoute();
+    } catch (error) {
+      if (
+        error instanceof DOMException
+        && error.name === 'AbortError'
+      ) {
+        return;
+      }
+
+      if (requestId !== this.routeRequestId) {
+        return;
+      }
+
+      this.routeError = true;
+      this.routeMessage =
+        error instanceof Error
+          ? error.message
+          : 'No se pudo calcular la ruta seleccionada.';
+    } finally {
+      if (requestId === this.routeRequestId) {
+        this.routeLoading = false;
+        this.routeAbortController = undefined;
+        this.cdr.detectChanges();
+      }
+    }
+  }
   private renderOrUpdateMap(): void {
     const renderId = ++this.renderRequestId;
 
@@ -274,10 +540,12 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
       this.map.once('load', () => {
         this.drawMarkers(mapbox, locatedRequests);
         this.fitMapToVisiblePoints(locatedRequests);
+        this.drawCalculatedRoute();
       });
     } else {
       this.drawMarkers(mapbox, locatedRequests);
       this.fitMapToVisiblePoints(locatedRequests);
+      this.drawCalculatedRoute();
     }
 
     this.statusMessage = '';
@@ -326,6 +594,13 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
       this.locationMessage = 'Modo demo Lima activo.';
     } else {
       location = await this.getRealDoctorLocation();
+    }
+
+    if (!this.routeGeometry && !this.routeLoading) {
+      this.routeError = false;
+      this.routeMessage = location
+        ? 'Origen listo. Pulse Calcular ruta para consultar Mapbox Directions.'
+        : 'La ruta requiere una ubicacion valida del especialista.';
     }
 
     this.specialistLocationChanged.emit(location);
@@ -441,6 +716,113 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     });
 
     return this.realLocationPromise;
+  }
+  private drawCalculatedRoute(): void {
+    if (
+      !this.map
+      || !this.routeGeometry
+      || !this.map.isStyleLoaded?.()
+    ) {
+      return;
+    }
+
+    const geoJson = {
+      type: 'Feature',
+      properties: {},
+      geometry: this.routeGeometry
+    };
+
+    const existingSource = this.map.getSource(this.routeSourceId);
+
+    if (existingSource?.setData) {
+      existingSource.setData(geoJson);
+    } else {
+      this.map.addSource(this.routeSourceId, {
+        type: 'geojson',
+        data: geoJson
+      });
+    }
+
+    if (!this.map.getLayer(this.routeLayerId)) {
+      this.map.addLayer({
+        id: this.routeLayerId,
+        type: 'line',
+        source: this.routeSourceId,
+        layout: {
+          'line-cap': 'round',
+          'line-join': 'round'
+        },
+        paint: {
+          'line-color': '#2563eb',
+          'line-width': 6,
+          'line-opacity': 0.88
+        }
+      });
+    }
+
+    this.fitMapToRoute(this.routeGeometry.coordinates);
+  }
+
+  private fitMapToRoute(coordinates: number[][]): void {
+    if (!this.map || !this.mapbox || coordinates.length === 0) {
+      return;
+    }
+
+    const bounds = new this.mapbox.LngLatBounds();
+
+    for (const coordinate of coordinates) {
+      if (
+        coordinate.length >= 2
+        && Number.isFinite(Number(coordinate[0]))
+        && Number.isFinite(Number(coordinate[1]))
+      ) {
+        bounds.extend([
+          Number(coordinate[0]),
+          Number(coordinate[1])
+        ]);
+      }
+    }
+
+    if (!bounds.isEmpty()) {
+      this.map.fitBounds(bounds, {
+        padding: 70,
+        maxZoom: 15,
+        duration: 700
+      });
+    }
+  }
+
+  private clearCalculatedRoute(message: string): void {
+    this.routeRequestId++;
+    this.routeAbortController?.abort();
+    this.routeAbortController = undefined;
+
+    this.routeLoading = false;
+    this.routeError = false;
+    this.routeDistanceMeters = null;
+    this.routeDurationSeconds = null;
+    this.routeGeometry = undefined;
+    this.routeMessage = message;
+
+    this.clearRouteLayer();
+  }
+
+  private clearRouteLayer(): void {
+    if (!this.map) {
+      return;
+    }
+
+    try {
+      if (this.map.getLayer(this.routeLayerId)) {
+        this.map.removeLayer(this.routeLayerId);
+      }
+
+      if (this.map.getSource(this.routeSourceId)) {
+        this.map.removeSource(this.routeSourceId);
+      }
+    } catch {
+      // El mapa puede estar cambiando de estilo o destruyendose.
+    }
   }
   private drawMarkers(mapbox: any, requests: MedicalRequest[]): void {
     this.clearRequestMarkers();
@@ -586,6 +968,10 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   private resetDoctorLocation(): void {
+    this.clearCalculatedRoute(
+      'La ruta se limpio porque cambio la ubicacion del especialista.'
+    );
+
     this.doctorLocation = undefined;
     this.realLocationPromise = undefined;
     this.doctorMarker?.remove();

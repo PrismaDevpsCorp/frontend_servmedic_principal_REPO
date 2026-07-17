@@ -127,6 +127,53 @@
     </div>
   }
 
+  @if (selectedRequest && hasCoordinates(selectedRequest)) {
+    <div class="route-panel">
+      <div class="route-panel-heading">
+        <div>
+          <span>Ruta por carretera</span>
+          <strong>Especialista hacia solicitud seleccionada</strong>
+          <small>
+            El calculo solo se ejecuta cuando se pulsa el boton.
+          </small>
+        </div>
+
+        <button
+          type="button"
+          class="route-action-button"
+          (click)="calculateOrUpdateRoute()"
+          [disabled]="!canCalculateRoute()">
+          {{ routeButtonLabel() }}
+        </button>
+      </div>
+
+      @if (hasCalculatedRoute()) {
+        <div class="route-metrics">
+          <div>
+            <span>Distancia por carretera</span>
+            <strong>{{ routeDistanceLabel() }}</strong>
+          </div>
+
+          <div>
+            <span>Tiempo estimado</span>
+            <strong>{{ routeDurationLabel() }}</strong>
+          </div>
+
+          <div>
+            <span>Perfil de ruta</span>
+            <strong>Vehiculo</strong>
+          </div>
+        </div>
+      }
+
+      <div
+        class="route-status"
+        [class.route-status-error]="routeError"
+        [class.route-status-success]="hasCalculatedRoute() && !routeError">
+        {{ routeMessage }}
+      </div>
+    </div>
+  }
   <div class="map-frame">
     <div #mapContainer class="map-container"></div>
 

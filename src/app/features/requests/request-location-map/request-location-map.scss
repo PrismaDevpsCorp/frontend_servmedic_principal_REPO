@@ -387,3 +387,111 @@
     0 0 0 5px rgba(245, 158, 11, 0.3),
     0 12px 28px rgba(146, 64, 14, 0.3);
 }
+
+.route-panel {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid #bfdbfe;
+  border-radius: 18px;
+  background: #eff6ff;
+}
+
+.route-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.route-panel-heading > div {
+  display: grid;
+  gap: 4px;
+}
+
+.route-panel-heading span,
+.route-metrics span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.route-panel-heading strong {
+  color: #0f172a;
+  font-size: 17px;
+}
+
+.route-panel-heading small {
+  color: #475569;
+  font-weight: 700;
+}
+
+.route-action-button {
+  min-width: 160px;
+  border: 0;
+  border-radius: 999px;
+  padding: 13px 18px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.route-action-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.route-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.route-metrics > div {
+  display: grid;
+  gap: 5px;
+  padding: 13px;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.route-metrics strong {
+  color: #0f766e;
+  font-size: 18px;
+}
+
+.route-status {
+  padding: 11px 13px;
+  border-radius: 12px;
+  color: #1e3a8a;
+  background: #dbeafe;
+  font-weight: 800;
+}
+
+.route-status-success {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.route-status-error {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+@media (max-width: 760px) {
+  .route-panel-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .route-action-button {
+    width: 100%;
+  }
+
+  .route-metrics {
+    grid-template-columns: 1fr;
+  }
+}

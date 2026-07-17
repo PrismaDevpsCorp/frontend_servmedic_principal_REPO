@@ -19,6 +19,8 @@ interface DoctorLocation {
   longitude: number;
 }
 
+type DoctorLocationMode = 'REAL' | 'DEMO_HUARAZ' | 'DEMO_LIMA';
+
 @Component({
   selector: 'app-request-location-map',
   imports: [CommonModule],
@@ -32,6 +34,22 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
 
   @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
 
+  private readonly locationModeStorageKey = 'medicdrive_specialist_location_mode';
+
+  private readonly demoLocations: Record<
+    Exclude<DoctorLocationMode, 'REAL'>,
+    DoctorLocation
+  > = {
+    DEMO_HUARAZ: {
+      latitude: -9.5268,
+      longitude: -77.5270
+    },
+    DEMO_LIMA: {
+      latitude: -12.0464,
+      longitude: -77.0428
+    }
+  };
+
   private mapbox?: any;
   private map?: any;
   private requestMarkers: any[] = [];
@@ -39,9 +57,12 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
   private runtimeToken?: string;
   private doctorLocation?: DoctorLocation;
 
+  locationMode: DoctorLocationMode = this.readStoredLocationMode();
+  locationLoading = false;
   mapReady = false;
+
   statusMessage = 'Cargando mapa operativo de solicitudes pendientes...';
-  locationMessage = 'Ubicacion del medico pendiente de obtener.';
+  locationMessage = 'Ubicacion del especialista pendiente de obtener.';
 
   ngAfterViewInit(): void {
     this.renderOrUpdateMap();
@@ -63,7 +84,6 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     return this.requests.filter((request) => this.hasCoordinates(request));
   }
 
-
   visibleRequestsWithCoordinates(): MedicalRequest[] {
     const visibleRequests = [...this.pendingWithCoordinates()];
     const selected = this.selectedRequest;
@@ -78,6 +98,7 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
 
     return visibleRequests;
   }
+
   hasCoordinates(request?: MedicalRequest | null): boolean {
     return request?.latitude !== null
       && request?.latitude !== undefined
@@ -101,6 +122,35 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     return `https://www.google.com/maps/search/?api=1&query=${this.selectedRequest?.latitude},${this.selectedRequest?.longitude}`;
   }
 
+  locationModeLabel(): string {
+    const labels: Record<DoctorLocationMode, string> = {
+      REAL: 'Ubicacion real',
+      DEMO_HUARAZ: 'Demo Huaraz',
+      DEMO_LIMA: 'Demo Lima'
+    };
+
+    return labels[this.locationMode];
+  }
+
+  changeLocationMode(value: string): void {
+    if (!this.isValidLocationMode(value)) {
+      return;
+    }
+
+    this.locationMode = value;
+    this.saveLocationMode(value);
+    this.resetDoctorLocation();
+
+    this.locationMessage = 'Actualizando ubicacion del especialista...';
+    this.renderOrUpdateMap();
+  }
+
+  refreshDoctorLocation(): void {
+    this.resetDoctorLocation();
+    this.locationMessage = 'Actualizando ubicacion del especialista...';
+    this.renderOrUpdateMap();
+  }
+
   selectRequest(request: MedicalRequest): void {
     this.requestSelected.emit(request);
     this.flyToRequest(request);
@@ -120,7 +170,7 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     const locatedRequests = this.visibleRequestsWithCoordinates();
 
     if (locatedRequests.length === 0) {
-      this.statusMessage = 'No hay solicitudes pendientes con coordenadas para mostrar en el mapa.';
+      this.statusMessage = 'No hay solicitudes con coordenadas para mostrar en el mapa.';
       this.mapReady = false;
       return;
     }
@@ -163,43 +213,87 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     setTimeout(() => this.map?.resize(), 250);
   }
 
-  private async resolveInitialCenter(requests: MedicalRequest[]): Promise<[number, number]> {
-    const doctorLocation = await this.getDoctorLocation();
+  private async resolveInitialCenter(
+    requests: MedicalRequest[]
+  ): Promise<[number, number]> {
+    const doctorLocation = await this.resolveDoctorLocation();
 
     if (doctorLocation) {
-      this.locationMessage = 'Mapa referenciado desde la ubicacion actual del medico.';
       return [doctorLocation.longitude, doctorLocation.latitude];
     }
 
-    const selected = this.selectedRequest && this.hasCoordinates(this.selectedRequest)
-      ? this.selectedRequest
-      : requests[0];
+    const selected =
+      this.selectedRequest && this.hasCoordinates(this.selectedRequest)
+        ? this.selectedRequest
+        : requests[0];
 
-    this.locationMessage = 'No se pudo obtener la ubicacion del medico. Se uso la primera solicitud pendiente como referencia.';
+    if (!this.locationMessage.includes('HTTPS')) {
+      this.locationMessage =
+        'No se pudo obtener la ubicacion real. Se uso una solicitud como referencia.';
+    }
 
     return [Number(selected.longitude), Number(selected.latitude)];
   }
 
-  private getDoctorLocation(): Promise<DoctorLocation | null> {
+  private resolveDoctorLocation(): Promise<DoctorLocation | null> {
+    if (this.locationMode === 'DEMO_HUARAZ') {
+      this.doctorLocation = { ...this.demoLocations.DEMO_HUARAZ };
+      this.locationMessage = 'Modo demo Huaraz activo.';
+      return Promise.resolve(this.doctorLocation);
+    }
+
+    if (this.locationMode === 'DEMO_LIMA') {
+      this.doctorLocation = { ...this.demoLocations.DEMO_LIMA };
+      this.locationMessage = 'Modo demo Lima activo.';
+      return Promise.resolve(this.doctorLocation);
+    }
+
+    return this.getRealDoctorLocation();
+  }
+
+  private getRealDoctorLocation(): Promise<DoctorLocation | null> {
     if (this.doctorLocation) {
       return Promise.resolve(this.doctorLocation);
     }
 
     if (!navigator.geolocation) {
+      this.locationMessage = 'El navegador no permite obtener la ubicacion.';
       return Promise.resolve(null);
     }
+
+    const isLocalhost =
+      window.location.hostname === 'localhost'
+      || window.location.hostname === '127.0.0.1';
+
+    if (!window.isSecureContext && !isLocalhost) {
+      this.locationMessage =
+        'La ubicacion real requiere HTTPS. Use un modo demo hasta activar SSL.';
+      return Promise.resolve(null);
+    }
+
+    this.locationLoading = true;
 
     return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          this.locationLoading = false;
+
           this.doctorLocation = {
             latitude: Number(position.coords.latitude.toFixed(7)),
             longitude: Number(position.coords.longitude.toFixed(7))
           };
 
+          this.locationMessage =
+            'Mapa referenciado desde la ubicacion real del especialista.';
+
           resolve(this.doctorLocation);
         },
-        () => resolve(null),
+        () => {
+          this.locationLoading = false;
+          this.locationMessage =
+            'No se pudo obtener la ubicacion real del especialista.';
+          resolve(null);
+        },
         {
           enableHighAccuracy: true,
           timeout: 10000,
@@ -263,14 +357,22 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     const element = document.createElement('div');
     element.className = 'doctor-location-marker';
     element.textContent = '+';
-    element.title = 'Ubicacion actual del medico';
+    element.title = this.locationModeLabel();
+    element.style.zIndex = '20';
 
     this.doctorMarker = new mapbox.Marker({
       element,
       anchor: 'center'
     })
-      .setLngLat([this.doctorLocation.longitude, this.doctorLocation.latitude])
-      .setPopup(new mapbox.Popup({ offset: 24 }).setHTML('<strong>Ubicacion actual del medico</strong>'))
+      .setLngLat([
+        this.doctorLocation.longitude,
+        this.doctorLocation.latitude
+      ])
+      .setPopup(
+        new mapbox.Popup({ offset: 24 }).setHTML(
+          `<strong>${this.escapeHtml(this.locationModeLabel())}</strong>`
+        )
+      )
       .addTo(this.map);
   }
 
@@ -284,12 +386,20 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     let pointCount = 0;
 
     if (this.doctorLocation) {
-      bounds.extend([this.doctorLocation.longitude, this.doctorLocation.latitude]);
+      bounds.extend([
+        this.doctorLocation.longitude,
+        this.doctorLocation.latitude
+      ]);
+
       pointCount++;
     }
 
     for (const request of requests) {
-      bounds.extend([Number(request.longitude), Number(request.latitude)]);
+      bounds.extend([
+        Number(request.longitude),
+        Number(request.latitude)
+      ]);
+
       pointCount++;
     }
 
@@ -330,6 +440,12 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     }
 
     this.requestMarkers = [];
+  }
+
+  private resetDoctorLocation(): void {
+    this.doctorLocation = undefined;
+    this.doctorMarker?.remove();
+    this.doctorMarker = undefined;
   }
 
   private async loadMapbox(): Promise<any> {
@@ -374,7 +490,10 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
         return '';
       }
 
-      const config = await response.json() as { mapboxAccessToken?: string };
+      const config = await response.json() as {
+        mapboxAccessToken?: string;
+      };
+
       this.runtimeToken = (config.mapboxAccessToken ?? '').trim();
 
       return this.runtimeToken;
@@ -385,13 +504,43 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   private runtimeConfigUrl(): string {
-    const baseHref = document.querySelector('base')?.getAttribute('href') ?? '/';
-    const normalizedBaseHref = baseHref.endsWith('/') ? baseHref : `${baseHref}/`;
+    const baseHref =
+      document.querySelector('base')?.getAttribute('href') ?? '/';
+
+    const normalizedBaseHref = baseHref.endsWith('/')
+      ? baseHref
+      : `${baseHref}/`;
 
     return new URL(
       'assets/medicdrive-runtime-config.json',
       `${window.location.origin}${normalizedBaseHref}`
     ).toString();
+  }
+
+  private readStoredLocationMode(): DoctorLocationMode {
+    try {
+      const stored = localStorage.getItem(this.locationModeStorageKey);
+
+      return this.isValidLocationMode(stored) ? stored : 'REAL';
+    } catch {
+      return 'REAL';
+    }
+  }
+
+  private saveLocationMode(mode: DoctorLocationMode): void {
+    try {
+      localStorage.setItem(this.locationModeStorageKey, mode);
+    } catch {
+      // La aplicacion puede continuar aunque el navegador bloquee localStorage.
+    }
+  }
+
+  private isValidLocationMode(
+    value?: string | null
+  ): value is DoctorLocationMode {
+    return value === 'REAL'
+      || value === 'DEMO_HUARAZ'
+      || value === 'DEMO_LIMA';
   }
 
   private escapeHtml(value?: string | null): string {

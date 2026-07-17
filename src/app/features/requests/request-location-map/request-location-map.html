@@ -4,15 +4,73 @@
       <p>Mapa operativo</p>
       <h3>Solicitudes pendientes cercanas</h3>
       <span>
-        Visualice todas las solicitudes pendientes y seleccione una desde el mapa.
+        Visualice las solicitudes disponibles y seleccione una desde el mapa.
       </span>
     </div>
 
     @if (selectedRequest && hasCoordinates(selectedRequest)) {
-      <a [href]="externalMapUrl()" target="_blank" rel="noopener noreferrer">
+      <a
+        [href]="externalMapUrl()"
+        target="_blank"
+        rel="noopener noreferrer">
         Abrir mapa externo
       </a>
     }
+  </div>
+
+  <div class="location-controls">
+    <div class="location-control-heading">
+      <div>
+        <span>Ubicacion del especialista</span>
+        <strong>{{ locationModeLabel() }}</strong>
+      </div>
+
+      <small>
+        El modo seleccionado se guarda solamente en este navegador.
+      </small>
+    </div>
+
+    <div class="location-control-actions">
+      <label class="location-mode-field">
+        Modo de ubicacion
+
+        <select
+          [value]="locationMode"
+          (change)="changeLocationMode($any($event.target).value)"
+          [disabled]="locationLoading">
+          <option value="REAL">Ubicacion real</option>
+          <option value="DEMO_HUARAZ">Demo Huaraz</option>
+          <option value="DEMO_LIMA">Demo Lima</option>
+        </select>
+      </label>
+
+      <button
+        type="button"
+        class="refresh-location-button"
+        (click)="refreshDoctorLocation()"
+        [disabled]="locationLoading">
+        {{ locationLoading ? 'Obteniendo ubicacion...' : 'Actualizar ubicacion' }}
+      </button>
+    </div>
+
+    <div class="location-mode-notice">
+      @if (locationMode === 'REAL') {
+        <strong>Modo real</strong>
+        <span>
+          Usa la ubicacion proporcionada por el navegador. En AWS requerira HTTPS.
+        </span>
+      } @else if (locationMode === 'DEMO_HUARAZ') {
+        <strong>Modo demostracion</strong>
+        <span>
+          El especialista sera ubicado temporalmente en el centro de Huaraz.
+        </span>
+      } @else {
+        <strong>Modo demostracion</strong>
+        <span>
+          El especialista sera ubicado temporalmente en el centro de Lima.
+        </span>
+      }
+    </div>
   </div>
 
   <div class="map-stats">
@@ -64,23 +122,26 @@
     @if (statusMessage) {
       <div class="map-placeholder">
         <strong>{{ statusMessage }}</strong>
+
         <span>
-          Para pruebas locales, guarde el token en el navegador con la clave
+          Para pruebas locales puede configurar el token Mapbox mediante
           medicdrive_mapbox_token.
         </span>
       </div>
     }
   </div>
 
-  @if (pendingWithCoordinates().length > 0) {
+  @if (visibleRequestsWithCoordinates().length > 0) {
     <div class="map-help">
       <span class="legend-dot doctor">+</span>
-      <span>Medico</span>
+      <span>Especialista</span>
 
       <span class="legend-dot service">S</span>
-      <span>Solicitud pendiente</span>
+      <span>Solicitud</span>
 
-      <small>Haga clic sobre un marcador S para cargar la solicitud.</small>
+      <small>
+        Haga clic sobre un marcador S para seleccionar la solicitud.
+      </small>
     </div>
   }
 </section>

@@ -343,3 +343,34 @@ td small {
   line-height: 1;
   white-space: nowrap;
 }
+
+.request-card.nearest-request-card {
+  border-color: #f59e0b;
+  box-shadow: 0 18px 42px rgba(245, 158, 11, 0.18);
+}
+
+.distance-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.distance-line > span:not(.nearest-badge) {
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.nearest-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #fcd34d;
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: #92400e;
+  background: #fef3c7;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}

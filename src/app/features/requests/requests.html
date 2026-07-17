@@ -47,8 +47,11 @@
       <div class="empty-state">No hay solicitudes pendientes por el momento.</div>
     } @else {
       <div class="cards-grid">
-        @for (request of pendingRequests(); track request.id) {
-          <article class="request-card" [class.selected-map-card]="isSelectedMapRequest(request)">
+        @for (request of sortedPendingRequests(); track request.id) {
+          <article
+            class="request-card"
+            [class.selected-map-card]="isSelectedMapRequest(request)"
+            [class.nearest-request-card]="isNearestRequest(request)">
             <div class="request-top">
               <div>
                 <strong>{{ request.requestCode }}</strong>
@@ -64,6 +67,17 @@
               <p><b>DNI:</b> {{ request.patientDni || 'No registrado' }}</p>
               <p><b>Direccion:</b> {{ request.addressText }}</p>
               <p><b>Referencia:</b> {{ request.addressReference || 'Sin referencia' }}</p>
+
+              @if (calculatedDistanceKm(request) !== null) {
+                <p class="distance-line">
+                  <b>Distancia aproximada:</b>
+                  <span>{{ distanceLabel(request) }}</span>
+
+                  @if (isNearestRequest(request)) {
+                    <span class="nearest-badge">Mas cercana</span>
+                  }
+                </p>
+              }
               <p><b>Monto estimado:</b> S/{{ (request.estimatedAmount ?? 0) | number:'1.2-2' }}</p>
               <p><b>Notas:</b> {{ request.patientNotes || 'Sin notas' }}</p>
             </div>
@@ -124,7 +138,9 @@
   <app-request-location-map
     [requests]="pendingRequests()"
     [selectedRequest]="selectedMapRequest()"
-    (requestSelected)="selectMapRequest($event)">
+    [nearestRequestId]="nearestRequestId()"
+    (requestSelected)="selectMapRequest($event)"
+    (specialistLocationChanged)="updateSpecialistLocation($event)">
   </app-request-location-map>
 
   <div class="section-card">

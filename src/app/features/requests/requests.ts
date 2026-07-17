@@ -6,7 +6,7 @@ import { Observable, catchError, finalize, forkJoin, map, of } from 'rxjs';
 import { MedicalRequest } from '../../core/models/medical-request.model';
 import { AttentionReportService } from '../../core/services/attention-report.service';
 import { SpecialistMedicalRequestService } from '../../core/services/specialist-medical-request.service';
-import { RequestLocationMap } from './request-location-map/request-location-map';
+import { RequestLocationMap, SpecialistMapLocation } from './request-location-map/request-location-map';
 
 type ReportCompletionStatus = 'LOADING' | 'PENDING' | 'COMPLETE' | 'ERROR';
 
@@ -23,6 +23,7 @@ export class Requests {
   pendingRequests = signal<MedicalRequest[]>([]);
   assignedRequests = signal<MedicalRequest[]>([]);
   selectedMapRequest = signal<MedicalRequest | null>(null);
+  specialistLocation = signal<SpecialistMapLocation | null>(null);
 
   statusFilter = signal('ALL');
   searchTerm = signal('');
@@ -42,6 +43,44 @@ export class Requests {
     this.assignedRequests().filter((item) => item.status !== 'FINALIZADO').length
   );
 
+
+  sortedPendingRequests = computed(() => {
+    const location = this.specialistLocation();
+    const requests = [...this.pendingRequests()];
+
+    if (!location) {
+      return requests;
+    }
+
+    return requests.sort((first, second) => {
+      const firstDistance = this.calculateDistanceKm(first, location);
+      const secondDistance = this.calculateDistanceKm(second, location);
+
+      if (firstDistance === null && secondDistance === null) {
+        return 0;
+      }
+
+      if (firstDistance === null) {
+        return 1;
+      }
+
+      if (secondDistance === null) {
+        return -1;
+      }
+
+      return firstDistance - secondDistance;
+    });
+  });
+
+  nearestRequestId = computed<number | null>(() => {
+    if (!this.specialistLocation()) {
+      return null;
+    }
+
+    return this.sortedPendingRequests()
+      .find((request) => this.hasCoordinates(request))
+      ?.id ?? null;
+  });
   filteredAssignedRequests = computed(() => {
     const status = this.statusFilter();
     const search = this.normalizeText(this.searchTerm());
@@ -99,6 +138,52 @@ export class Requests {
     this.searchTerm.set('');
   }
 
+
+  updateSpecialistLocation(
+    location: SpecialistMapLocation | null
+  ): void {
+    this.specialistLocation.set(location);
+
+    if (this.selectedMapRequest() || !location) {
+      return;
+    }
+
+    const nearestId = this.nearestRequestId();
+    const nearestRequest = this.pendingRequests()
+      .find((request) => request.id === nearestId);
+
+    if (nearestRequest) {
+      this.selectedMapRequest.set(nearestRequest);
+    }
+  }
+
+  calculatedDistanceKm(request: MedicalRequest): number | null {
+    const location = this.specialistLocation();
+
+    if (!location) {
+      return null;
+    }
+
+    return this.calculateDistanceKm(request, location);
+  }
+
+  distanceLabel(request: MedicalRequest): string {
+    const distance = this.calculatedDistanceKm(request);
+
+    if (distance === null) {
+      return 'Sin calcular';
+    }
+
+    if (distance < 1) {
+      return `${Math.round(distance * 1000)} m`;
+    }
+
+    return `${distance.toFixed(1)} km`;
+  }
+
+  isNearestRequest(request: MedicalRequest): boolean {
+    return this.nearestRequestId() === request.id;
+  }
   selectMapRequest(request: MedicalRequest): void {
     this.selectedMapRequest.set(request);
   }
@@ -243,6 +328,49 @@ export class Requests {
 
       this.reportStatusByRequestId.set(statuses);
     });
+  }
+
+  private calculateDistanceKm(
+    request: MedicalRequest,
+    location: SpecialistMapLocation
+  ): number | null {
+    if (!this.hasCoordinates(request)) {
+      return null;
+    }
+
+    const requestLatitude = Number(request.latitude);
+    const requestLongitude = Number(request.longitude);
+
+    if (
+      !Number.isFinite(requestLatitude)
+      || !Number.isFinite(requestLongitude)
+    ) {
+      return null;
+    }
+
+    const earthRadiusKm = 6371;
+    const latitudeDifference =
+      this.toRadians(requestLatitude - location.latitude);
+    const longitudeDifference =
+      this.toRadians(requestLongitude - location.longitude);
+
+    const firstLatitude = this.toRadians(location.latitude);
+    const secondLatitude = this.toRadians(requestLatitude);
+
+    const haversine =
+      Math.sin(latitudeDifference / 2) ** 2
+      + Math.cos(firstLatitude)
+      * Math.cos(secondLatitude)
+      * Math.sin(longitudeDifference / 2) ** 2;
+
+    const angularDistance =
+      2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+
+    return earthRadiusKm * angularDistance;
+  }
+
+  private toRadians(value: number): number {
+    return value * Math.PI / 180;
   }
   private matchesSearch(request: MedicalRequest, search: string): boolean {
     const values = [

@@ -15,10 +15,12 @@ import {
 import { MedicalRequest } from '../../../core/models/medical-request.model';
 import { environment } from '../../../../environments/environment';
 
-interface DoctorLocation {
+export interface SpecialistMapLocation {
   latitude: number;
   longitude: number;
 }
+
+type DoctorLocation = SpecialistMapLocation;
 
 type DoctorLocationMode = 'REAL' | 'DEMO_HUARAZ' | 'DEMO_LIMA';
 
@@ -31,7 +33,11 @@ type DoctorLocationMode = 'REAL' | 'DEMO_HUARAZ' | 'DEMO_LIMA';
 export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
   @Input() requests: MedicalRequest[] = [];
   @Input() selectedRequest: MedicalRequest | null = null;
+  @Input() nearestRequestId: number | null = null;
+
   @Output() requestSelected = new EventEmitter<MedicalRequest>();
+  @Output() specialistLocationChanged =
+    new EventEmitter<SpecialistMapLocation | null>();
 
   @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
 
@@ -76,7 +82,11 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['requests'] || changes['selectedRequest']) {
+    if (
+      changes['requests']
+      || changes['selectedRequest']
+      || changes['nearestRequestId']
+    ) {
       this.renderOrUpdateMap();
     }
   }
@@ -303,22 +313,24 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     return [Number(selected.longitude), Number(selected.latitude)];
   }
 
-  private resolveDoctorLocation(): Promise<DoctorLocation | null> {
+  private async resolveDoctorLocation(): Promise<DoctorLocation | null> {
+    let location: DoctorLocation | null = null;
+
     if (this.locationMode === 'DEMO_HUARAZ') {
-      this.doctorLocation = { ...this.demoLocations.DEMO_HUARAZ };
+      location = { ...this.demoLocations.DEMO_HUARAZ };
+      this.doctorLocation = location;
       this.locationMessage = 'Modo demo Huaraz activo.';
-      return Promise.resolve(this.doctorLocation);
-    }
-
-    if (this.locationMode === 'DEMO_LIMA') {
-      this.doctorLocation = { ...this.demoLocations.DEMO_LIMA };
+    } else if (this.locationMode === 'DEMO_LIMA') {
+      location = { ...this.demoLocations.DEMO_LIMA };
+      this.doctorLocation = location;
       this.locationMessage = 'Modo demo Lima activo.';
-      return Promise.resolve(this.doctorLocation);
+    } else {
+      location = await this.getRealDoctorLocation();
     }
 
-    return this.getRealDoctorLocation();
+    this.specialistLocationChanged.emit(location);
+    return location;
   }
-
   private getRealDoctorLocation(): Promise<DoctorLocation | null> {
     if (this.doctorLocation) {
       return Promise.resolve(this.doctorLocation);
@@ -443,6 +455,10 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
       markerElement.className = 'service-request-marker';
       markerElement.textContent = 'S';
       markerElement.title = `${request.requestCode} - ${request.addressText}`;
+
+      if (this.nearestRequestId === request.id) {
+        markerElement.classList.add('nearest');
+      }
 
       if (this.selectedRequest?.id === request.id) {
         markerElement.classList.add('selected');
@@ -574,6 +590,7 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     this.realLocationPromise = undefined;
     this.doctorMarker?.remove();
     this.doctorMarker = undefined;
+    this.specialistLocationChanged.emit(null);
   }
 
   private async loadMapbox(): Promise<any> {

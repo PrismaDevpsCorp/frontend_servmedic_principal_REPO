@@ -378,3 +378,12 @@
     align-items: flex-start;
   }
 }
+
+:host ::ng-deep .service-request-marker.nearest:not(.selected) {
+  border-color: #ffffff;
+  color: #78350f;
+  background: #f59e0b;
+  box-shadow:
+    0 0 0 5px rgba(245, 158, 11, 0.3),
+    0 12px 28px rgba(146, 64, 14, 0.3);
+}

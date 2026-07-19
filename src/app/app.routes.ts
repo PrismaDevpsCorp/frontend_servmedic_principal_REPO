@@ -52,6 +52,20 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'commercial-profile',
+    component: SpecialistLayout,
+    canActivate: [specialistAuthGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/commercial-profile/commercial-profile').then(
+            (module) => module.CommercialProfile
+          )
+      }
+    ]
+  },
+  {
     path: 'attention-report',
     component: SpecialistLayout,
     canActivate: [specialistAuthGuard],

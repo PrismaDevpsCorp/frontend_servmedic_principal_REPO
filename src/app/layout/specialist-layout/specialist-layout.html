@@ -9,9 +9,37 @@
     </div>
 
     <nav>
-      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
-      <a routerLink="/requests" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Solicitudes</a>
-      <a routerLink="/medical-records" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Fichas medicas</a>
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Dashboard
+      </a>
+
+      <a
+        routerLink="/requests"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Solicitudes
+      </a>
+
+      <a
+        routerLink="/medical-records"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Fichas medicas
+      </a>
+
+      <a
+        routerLink="/commercial-profile"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+      >
+        Perfil comercial
+      </a>
     </nav>
 
     <div class="specialist-card">
@@ -20,7 +48,13 @@
       <span>{{ session?.email }}</span>
     </div>
 
-    <button class="logout" type="button" (click)="logout()">Cerrar sesion</button>
+    <button
+      class="logout"
+      type="button"
+      (click)="logout()"
+    >
+      Cerrar sesion
+    </button>
   </aside>
 
   <main class="content">
@@ -29,6 +63,7 @@
         <p>Panel principal</p>
         <h1>Gestion operativa MedicDrive</h1>
       </div>
+
       <span class="status">AWS conectado</span>
     </header>
 

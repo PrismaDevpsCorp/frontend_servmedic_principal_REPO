@@ -16,8 +16,8 @@ export class Login {
 
   accessType: LoginAccessType = 'ESPECIALISTA';
 
-  username = 'medico.demo@correo.com';
-  password = 'EspecialistaServMedic2026';
+  username = '';
+  password = '';
 
   loading = signal(false);
   errorMessage = signal('');
@@ -27,13 +27,13 @@ export class Login {
     this.errorMessage.set('');
 
     if (type === 'PACIENTE') {
-      this.username = 'paciente.demo@correo.com';
-      this.password = 'PacienteServMedic2026';
+      this.username = '';
+      this.password = '';
       return;
     }
 
-    this.username = 'medico.demo@correo.com';
-    this.password = 'EspecialistaServMedic2026';
+    this.username = '';
+    this.password = '';
   }
 
   login(): void {

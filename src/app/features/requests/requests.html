@@ -1,12 +1,18 @@
 <section class="requests-page">
   <div class="page-heading">
     <div>
-      <p>Solicitudes medicas</p>
-      <h2>Gestion de solicitudes del especialista</h2>
-      <span>Consulte solicitudes pendientes, asignadas, historial operativo y ubicacion geografica.</span>
+      <p>Solicitudes médicas</p>
+      <h2>Gestión comercial y operativa</h2>
+      <span>
+        Revise solicitudes, envíe propuestas económicas y gestione
+        las atenciones elegidas por los pacientes.
+      </span>
     </div>
 
-    <button type="button" (click)="loadRequests()" [disabled]="loading()">
+    <button
+      type="button"
+      (click)="loadRequests()"
+      [disabled]="loading()">
       {{ loading() ? 'Actualizando...' : 'Actualizar' }}
     </button>
   </div>
@@ -34,67 +40,346 @@
   </div>
 
   @if (errorMessage()) {
-    <div class="error-message">{{ errorMessage() }}</div>
+    <div class="error-message">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="success-message">
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (commercialProfileError()) {
+    <div class="warning-message">
+      {{ commercialProfileError() }}
+    </div>
   }
 
   <div class="section-card">
     <div class="section-title">
-      <h3>Solicitudes pendientes</h3>
-      <span>{{ pendingRequests().length }} registro(s)</span>
+      <div>
+        <p>Oportunidades disponibles</p>
+        <h3>Solicitudes pendientes de propuesta</h3>
+      </div>
+
+      <span>
+        {{ pendingRequests().length }} registro(s)
+      </span>
     </div>
 
     @if (pendingRequests().length === 0) {
-      <div class="empty-state">No hay solicitudes pendientes por el momento.</div>
+      <div class="empty-state">
+        No hay solicitudes pendientes por el momento.
+      </div>
     } @else {
       <div class="cards-grid">
-        @for (request of sortedPendingRequests(); track request.id) {
+        @for (
+          request of sortedPendingRequests();
+          track request.id
+        ) {
           <article
             class="request-card"
             [class.selected-map-card]="isSelectedMapRequest(request)"
             [class.nearest-request-card]="isNearestRequest(request)">
+
             <div class="request-top">
               <div>
                 <strong>{{ request.requestCode }}</strong>
                 <span>{{ request.serviceName }}</span>
               </div>
-              <span class="status-badge" [ngClass]="statusClass(request.status)">
+
+              <span
+                class="status-badge"
+                [ngClass]="statusClass(request.status)">
                 {{ statusLabel(request.status) }}
               </span>
             </div>
 
             <div class="request-body">
-              <p><b>Paciente:</b> {{ request.patientFullName }}</p>
-              <p><b>DNI:</b> {{ request.patientDni || 'No registrado' }}</p>
-              <p><b>Direccion:</b> {{ request.addressText }}</p>
-              <p><b>Referencia:</b> {{ request.addressReference || 'Sin referencia' }}</p>
+              <p>
+                <b>Paciente:</b>
+                {{ request.patientFullName }}
+              </p>
+
+              <p>
+                <b>DNI:</b>
+                {{ request.patientDni || 'No registrado' }}
+              </p>
+
+              <p>
+                <b>Dirección:</b>
+                {{ request.addressText }}
+              </p>
+
+              <p>
+                <b>Referencia:</b>
+                {{ request.addressReference || 'Sin referencia' }}
+              </p>
 
               @if (calculatedDistanceKm(request) !== null) {
                 <p class="distance-line">
                   <b>Distancia aproximada:</b>
-                  <span>{{ distanceLabel(request) }}</span>
+
+                  <span>
+                    {{ distanceLabel(request) }}
+                  </span>
 
                   @if (isNearestRequest(request)) {
-                    <span class="nearest-badge">Mas cercana</span>
+                    <span class="nearest-badge">
+                      Más cercana
+                    </span>
                   }
                 </p>
               }
-              <p><b>Monto estimado:</b> S/{{ (request.estimatedAmount ?? 0) | number:'1.2-2' }}</p>
-              <p><b>Notas:</b> {{ request.patientNotes || 'Sin notas' }}</p>
+
+              <p>
+                <b>Notas:</b>
+                {{ request.patientNotes || 'Sin notas' }}
+              </p>
             </div>
 
+            @if (proposalPriceSummary(request); as price) {
+              <div class="price-preview">
+                <div class="price-preview-heading">
+                  <span>Propuesta calculada</span>
+                  <small>
+                    El backend confirmará el importe final
+                  </small>
+                </div>
+
+                <div class="price-line">
+                  <span>Servicio</span>
+                  <strong>
+                    S/
+                    {{ price.serviceAmount | number:'1.2-2' }}
+                  </strong>
+                </div>
+
+                <div class="price-line">
+                  <span>
+                    {{ mobilityPolicyLabel() }}
+                  </span>
+                  <strong>
+                    S/
+                    {{ price.mobilityAmount | number:'1.2-2' }}
+                  </strong>
+                </div>
+
+                <div class="price-line total-line">
+                  <span>Total</span>
+                  <strong>
+                    S/
+                    {{ price.totalAmount | number:'1.2-2' }}
+                  </strong>
+                </div>
+              </div>
+            } @else {
+              <div class="price-unavailable">
+                Este servicio no tiene un precio comercial
+                activo en su perfil.
+              </div>
+            }
+
+            @if (
+              currentProposal(request.id);
+              as proposal
+            ) {
+              <div class="proposal-summary">
+                <div class="proposal-summary-top">
+                  <div>
+                    <span>Propuesta enviada</span>
+                    <strong>
+                      S/
+                      {{ proposal.totalAmount | number:'1.2-2' }}
+                    </strong>
+                  </div>
+
+                  <span
+                    class="proposal-status"
+                    [ngClass]="proposalStatusClass(proposal.status)">
+                    {{ proposalStatusLabel(proposal.status) }}
+                  </span>
+                </div>
+
+                <div class="proposal-summary-grid">
+                  <span>
+                    Llegada:
+                    <b>
+                      {{ proposal.estimatedArrivalMinutes }}
+                      min
+                    </b>
+                  </span>
+
+                  <span>
+                    Vigente hasta:
+                    <b>
+                      {{ proposal.expiresAt | date:'dd/MM/yyyy HH:mm' }}
+                    </b>
+                  </span>
+                </div>
+
+                @if (proposal.message) {
+                  <p class="proposal-message">
+                    {{ proposal.message }}
+                  </p>
+                }
+              </div>
+            }
+
             <div class="actions">
-              @if (canAccept(request)) {
-                <button type="button" (click)="accept(request)" [disabled]="actionLoadingId() === request.id">
-                  {{ actionLoadingId() === request.id ? 'Procesando...' : 'Aceptar solicitud' }}
+              @if (
+                currentProposal(request.id);
+                as proposal
+              ) {
+                @if (proposal.status === 'PENDING') {
+                  <button
+                    type="button"
+                    class="danger-button"
+                    (click)="withdrawProposal(request, proposal)"
+                    [disabled]="proposalLoadingRequestId() === request.id">
+                    {{
+                      proposalLoadingRequestId() === request.id
+                        ? 'Procesando...'
+                        : 'Retirar propuesta'
+                    }}
+                  </button>
+                }
+
+                @if (canCreateAnotherProposal(proposal)) {
+                  <button
+                    type="button"
+                    (click)="openProposalEditor(request)">
+                    Nueva propuesta
+                  </button>
+                }
+              } @else {
+                <button
+                  type="button"
+                  (click)="openProposalEditor(request)"
+                  [disabled]="!proposalPriceSummary(request)">
+                  Enviar propuesta
                 </button>
               }
 
               @if (hasCoordinates(request)) {
-                <button type="button" class="map-button" (click)="selectMapRequest(request)">
-                  Ver ubicacion
+                <button
+                  type="button"
+                  class="map-button"
+                  (click)="selectMapRequest(request)">
+                  Ver ubicación
                 </button>
               }
             </div>
+
+            @if (
+              proposalEditorRequestId() === request.id
+            ) {
+              <div class="proposal-editor">
+                <div class="proposal-editor-heading">
+                  <div>
+                    <span>Nueva propuesta</span>
+                    <h4>
+                      Defina llegada, vigencia y mensaje
+                    </h4>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="close-button"
+                    (click)="closeProposalEditor()">
+                    Cerrar
+                  </button>
+                </div>
+
+                <div class="proposal-form-grid">
+                  <label>
+                    Llegada estimada en minutos
+                    <input
+                      type="number"
+                      min="1"
+                      max="1440"
+                      step="1"
+                      [(ngModel)]="proposalEstimatedArrivalMinutes"
+                    />
+                  </label>
+
+                  <label>
+                    Vigencia de la propuesta
+                    <select
+                      [(ngModel)]="proposalValidityMinutes">
+                      <option [ngValue]="5">
+                        5 minutos
+                      </option>
+                      <option [ngValue]="15">
+                        15 minutos
+                      </option>
+                      <option [ngValue]="30">
+                        30 minutos
+                      </option>
+                      <option [ngValue]="60">
+                        60 minutos
+                      </option>
+                      <option [ngValue]="120">
+                        120 minutos
+                      </option>
+                    </select>
+                  </label>
+                </div>
+
+                <label>
+                  Mensaje para el paciente
+                  <textarea
+                    rows="4"
+                    maxlength="500"
+                    [(ngModel)]="proposalMessage"
+                    placeholder="Ejemplo: Puedo atenderlo inmediatamente y llegar en aproximadamente 25 minutos.">
+                  </textarea>
+
+                  <small>
+                    {{ proposalMessage.length }} / 500
+                  </small>
+                </label>
+
+                @if (
+                  proposalPriceSummary(request);
+                  as editorPrice
+                ) {
+                  <div class="proposal-total-confirmation">
+                    <span>
+                      Total que verá el paciente
+                    </span>
+
+                    <strong>
+                      S/
+                      {{ editorPrice.totalAmount | number:'1.2-2' }}
+                    </strong>
+                  </div>
+                }
+
+                <div class="proposal-editor-actions">
+                  <button
+                    type="button"
+                    (click)="submitProposal(request)"
+                    [disabled]="proposalLoadingRequestId() === request.id">
+                    {{
+                      proposalLoadingRequestId() === request.id
+                        ? 'Enviando...'
+                        : 'Confirmar y enviar propuesta'
+                    }}
+                  </button>
+
+                  <button
+                    type="button"
+                    class="secondary-button"
+                    (click)="closeProposalEditor()"
+                    [disabled]="proposalLoadingRequestId() === request.id">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            }
           </article>
         }
       </div>
@@ -104,7 +389,7 @@
   <div class="filters-card">
     <div>
       <p>Historial avanzado</p>
-      <h3>Filtros de busqueda</h3>
+      <h3>Filtros de búsqueda</h3>
     </div>
 
     <div class="filters-grid">
@@ -114,22 +399,27 @@
           type="text"
           [ngModel]="searchTerm()"
           (ngModelChange)="updateSearchTerm($event)"
-          placeholder="DNI, codigo, paciente, servicio, direccion..."
+          placeholder="DNI, código, paciente, servicio, dirección..."
         />
       </label>
 
       <label>
         Estado
-        <select [ngModel]="statusFilter()" (ngModelChange)="updateStatusFilter($event)">
+        <select
+          [ngModel]="statusFilter()"
+          (ngModelChange)="updateStatusFilter($event)">
           <option value="ALL">Todos</option>
           <option value="ACCEPTED">Aceptadas</option>
           <option value="EN_CAMINO">En camino</option>
-          <option value="EN_ATENCION">En atencion</option>
+          <option value="EN_ATENCION">En atención</option>
           <option value="FINALIZADO">Finalizadas</option>
         </select>
       </label>
 
-      <button type="button" class="secondary-button" (click)="clearFilters()">
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="clearFilters()">
         Limpiar filtros
       </button>
     </div>
@@ -145,79 +435,140 @@
 
   <div class="section-card">
     <div class="section-title">
-      <h3>Asignadas e historial</h3>
+      <div>
+        <p>Servicios elegidos</p>
+        <h3>Asignadas e historial</h3>
+      </div>
+
       <span>
-        {{ filteredAssignedRequests().length }} de {{ assignedRequests().length }} registro(s)
+        {{ filteredAssignedRequests().length }}
+        de
+        {{ assignedRequests().length }}
+        registro(s)
       </span>
     </div>
 
     @if (assignedRequests().length === 0) {
-      <div class="empty-state">Aun no hay solicitudes asignadas.</div>
-    } @else if (filteredAssignedRequests().length === 0) {
-      <div class="empty-state">No hay resultados con los filtros aplicados.</div>
+      <div class="empty-state">
+        Aún no hay solicitudes asignadas.
+      </div>
+    } @else if (
+      filteredAssignedRequests().length === 0
+    ) {
+      <div class="empty-state">
+        No hay resultados con los filtros aplicados.
+      </div>
     } @else {
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Codigo</th>
+              <th>Código</th>
               <th>Paciente</th>
               <th>Servicio</th>
               <th>Estado</th>
-              <th>Monto</th>
+              <th>Monto elegido</th>
               <th>Fecha</th>
               <th>Acciones</th>
             </tr>
           </thead>
 
           <tbody>
-            @for (request of filteredAssignedRequests(); track request.id) {
+            @for (
+              request of filteredAssignedRequests();
+              track request.id
+            ) {
               <tr>
                 <td>
-                  <strong>{{ request.requestCode }}</strong>
-                  <small>{{ request.addressText }}</small>
+                  <strong>
+                    {{ request.requestCode }}
+                  </strong>
+
+                  <small>
+                    {{ request.addressText }}
+                  </small>
                 </td>
+
                 <td>
                   {{ request.patientFullName }}
-                  <small>DNI: {{ request.patientDni || 'No registrado' }}</small>
+
+                  <small>
+                    DNI:
+                    {{ request.patientDni || 'No registrado' }}
+                  </small>
                 </td>
+
                 <td>{{ request.serviceName }}</td>
+
                 <td>
-                  <span class="status-badge" [ngClass]="statusClass(request.status)">
+                  <span
+                    class="status-badge"
+                    [ngClass]="statusClass(request.status)">
                     {{ statusLabel(request.status) }}
                   </span>
                 </td>
-                <td>S/{{ (request.estimatedAmount ?? 0) | number:'1.2-2' }}</td>
-                <td>{{ request.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+
+                <td>
+                  S/
+                  {{
+                    (request.estimatedAmount ?? 0)
+                      | number:'1.2-2'
+                  }}
+                </td>
+
+                <td>
+                  {{
+                    request.createdAt
+                      | date:'dd/MM/yyyy HH:mm'
+                  }}
+                </td>
+
                 <td>
                   <div class="row-actions">
                     @if (hasCoordinates(request)) {
-                      <button type="button" class="map-button" (click)="selectMapRequest(request)">
-                        Ver ubicacion
+                      <button
+                        type="button"
+                        class="map-button"
+                        (click)="selectMapRequest(request)">
+                        Ver ubicación
                       </button>
                     }
 
                     @if (canStartRoute(request)) {
-                      <button type="button" (click)="startRoute(request)" [disabled]="actionLoadingId() === request.id">
+                      <button
+                        type="button"
+                        (click)="startRoute(request)"
+                        [disabled]="actionLoadingId() === request.id">
                         Iniciar ruta
                       </button>
                     }
 
                     @if (canStartAttention(request)) {
-                      <button type="button" (click)="startAttention(request)" [disabled]="actionLoadingId() === request.id">
-                        Iniciar atencion
+                      <button
+                        type="button"
+                        (click)="startAttention(request)"
+                        [disabled]="actionLoadingId() === request.id">
+                        Iniciar atención
                       </button>
                     }
 
                     @if (canFinish(request)) {
-                      <button type="button" (click)="finish(request)" [disabled]="actionLoadingId() === request.id">
+                      <button
+                        type="button"
+                        (click)="finish(request)"
+                        [disabled]="actionLoadingId() === request.id">
                         Finalizar
                       </button>
                     }
 
                     @if (request.status === 'FINALIZADO') {
                       <div class="report-action">
-                        <a class="report-link" [routerLink]="['/attention-report', request.id]">
+                        <a
+                          class="report-link"
+                          [routerLink]="[
+                            '/attention-report',
+                            request.id
+                          ]">
                           Abrir ficha
                         </a>
 

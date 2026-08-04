@@ -11,6 +11,7 @@
 }
 
 .page-heading p,
+.section-title p,
 .section-title span,
 .filters-card p {
   margin: 0 0 8px;
@@ -36,7 +37,13 @@ button {
   border-radius: 14px;
   padding: 12px 16px;
   color: white;
-  background: linear-gradient(135deg, #0f766e, #14b8a6, #2563eb);
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e,
+      #14b8a6,
+      #2563eb
+    );
   font-weight: 900;
   cursor: pointer;
 }
@@ -46,9 +53,16 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.secondary-button {
+.secondary-button,
+.map-button,
+.close-button {
   color: #0f766e;
   background: #ccfbf1;
+}
+
+.danger-button {
+  color: #991b1b;
+  background: #fee2e2;
 }
 
 .summary-grid {
@@ -63,7 +77,9 @@ button:disabled {
 .filters-card {
   border-radius: 24px;
   background: white;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  box-shadow:
+    0 18px 45px
+    rgba(15, 23, 42, 0.08);
 }
 
 .summary-grid article {
@@ -79,8 +95,8 @@ button:disabled {
 .summary-grid strong {
   display: block;
   margin-top: 10px;
-  font-size: 34px;
   color: #102033;
+  font-size: 34px;
 }
 
 .section-card,
@@ -113,21 +129,37 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
+  box-sizing: border-box;
   border: 1px solid #d8e3ee;
   border-radius: 16px;
   padding: 13px 14px;
+  color: #102033;
+  background: white;
+  font-family: inherit;
   font-size: 15px;
   outline: none;
-  background: white;
-  color: #102033;
+}
+
+textarea {
+  resize: vertical;
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: #14b8a6;
-  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.16);
+  box-shadow:
+    0 0 0 4px
+    rgba(20, 184, 166, 0.16);
+}
+
+label small {
+  color: #64748b;
+  font-weight: 700;
+  text-align: right;
 }
 
 .section-title {
@@ -144,7 +176,9 @@ select:focus {
 }
 
 .empty-state,
-.error-message {
+.error-message,
+.success-message,
+.warning-message {
   border-radius: 18px;
   padding: 16px;
   font-weight: 800;
@@ -158,6 +192,16 @@ select:focus {
 .error-message {
   color: #991b1b;
   background: #fee2e2;
+}
+
+.success-message {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.warning-message {
+  color: #92400e;
+  background: #fef3c7;
 }
 
 .cards-grid {
@@ -187,15 +231,15 @@ select:focus {
   font-size: 20px;
 }
 
-.request-top span {
-  color: #64748b;
+.request-top > div > span {
   margin-top: 4px;
+  color: #64748b;
 }
 
 .request-body {
-  margin-top: 18px;
   display: grid;
   gap: 8px;
+  margin-top: 18px;
   color: #475569;
 }
 
@@ -204,6 +248,204 @@ select:focus {
   line-height: 1.55;
 }
 
+.price-preview {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  border: 1px solid #99f6e4;
+  border-radius: 18px;
+  padding: 16px;
+  background: #f0fdfa;
+}
+
+.price-preview-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ccfbf1;
+}
+
+.price-preview-heading span {
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.price-preview-heading small {
+  color: #64748b;
+}
+
+.price-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #475569;
+}
+
+.price-line strong {
+  color: #102033;
+}
+
+.total-line {
+  padding-top: 10px;
+  border-top: 1px solid #99f6e4;
+  color: #0f766e;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.total-line strong {
+  color: #0f766e;
+  font-size: 20px;
+}
+
+.price-unavailable {
+  margin-top: 18px;
+  border-radius: 16px;
+  padding: 14px;
+  color: #92400e;
+  background: #fef3c7;
+  font-weight: 800;
+}
+
+.proposal-summary {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  border: 1px solid #bfdbfe;
+  border-radius: 18px;
+  padding: 16px;
+  background: #eff6ff;
+}
+
+.proposal-summary-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.proposal-summary-top span,
+.proposal-summary-top strong {
+  display: block;
+}
+
+.proposal-summary-top > div > span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.proposal-summary-top strong {
+  margin-top: 4px;
+  color: #1d4ed8;
+  font-size: 24px;
+}
+
+.proposal-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  color: #475569;
+}
+
+.proposal-message {
+  margin: 0;
+  border-radius: 12px;
+  padding: 12px;
+  color: #334155;
+  background: white;
+  line-height: 1.5;
+}
+
+.proposal-status {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.proposal-status-pending {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.proposal-status-accepted {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.proposal-status-rejected,
+.proposal-status-withdrawn,
+.proposal-status-expired {
+  color: #475569;
+  background: #e2e8f0;
+}
+
+.proposal-editor {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+  border: 2px solid #14b8a6;
+  border-radius: 20px;
+  padding: 18px;
+  background: #f8fafc;
+}
+
+.proposal-editor-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.proposal-editor-heading span {
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.proposal-editor-heading h4 {
+  margin: 5px 0 0;
+  color: #102033;
+  font-size: 18px;
+}
+
+.proposal-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.proposal-total-confirmation {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  border-radius: 16px;
+  padding: 15px;
+  color: white;
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e,
+      #14b8a6,
+      #2563eb
+    );
+}
+
+.proposal-total-confirmation strong {
+  font-size: 24px;
+}
+
+.proposal-editor-actions,
 .actions,
 .row-actions {
   display: flex;
@@ -225,18 +467,18 @@ table {
 }
 
 th {
-  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px;
   color: #64748b;
   font-size: 12px;
-  text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 12px;
-  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  text-transform: uppercase;
 }
 
 td {
-  padding: 14px 12px;
   border-bottom: 1px solid #eef2f7;
+  padding: 14px 12px;
   vertical-align: top;
 }
 
@@ -286,42 +528,17 @@ td small {
   width: fit-content;
   border-radius: 999px;
   padding: 8px 12px;
-  color: #ffffff;
-  background: linear-gradient(135deg, #0f766e, #14b8a6, #2563eb);
+  color: white;
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e,
+      #14b8a6,
+      #2563eb
+    );
   font-size: 12px;
   font-weight: 900;
   text-decoration: none;
-}
-
-@media (max-width: 1100px) {
-  .summary-grid,
-  .cards-grid,
-  .filters-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 760px) {
-  .page-heading,
-  .section-title {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .summary-grid,
-  .cards-grid,
-  .filters-grid {
-    grid-template-columns: 1fr;
-  }
-}
-.map-button {
-  color: #0f766e;
-  background: #ccfbf1;
-}
-.request-card.selected-map-card {
-  border: 2px solid #14b8a6;
-  box-shadow: 0 18px 45px rgba(20, 184, 166, 0.25);
-  transform: translateY(-2px);
 }
 
 .report-action {
@@ -344,9 +561,19 @@ td small {
   white-space: nowrap;
 }
 
+.request-card.selected-map-card {
+  border: 2px solid #14b8a6;
+  box-shadow:
+    0 18px 45px
+    rgba(20, 184, 166, 0.25);
+  transform: translateY(-2px);
+}
+
 .request-card.nearest-request-card {
   border-color: #f59e0b;
-  box-shadow: 0 18px 42px rgba(245, 158, 11, 0.18);
+  box-shadow:
+    0 18px 42px
+    rgba(245, 158, 11, 0.18);
 }
 
 .distance-line {
@@ -373,4 +600,31 @@ td small {
   font-weight: 900;
   line-height: 1;
   text-transform: uppercase;
+}
+
+@media (max-width: 1100px) {
+  .summary-grid,
+  .cards-grid,
+  .filters-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-heading,
+  .section-title,
+  .proposal-editor-heading,
+  .proposal-summary-top,
+  .price-preview-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .summary-grid,
+  .cards-grid,
+  .filters-grid,
+  .proposal-form-grid,
+  .proposal-summary-grid {
+    grid-template-columns: 1fr;
+  }
 }

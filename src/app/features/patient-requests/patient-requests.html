@@ -2,22 +2,36 @@
   <div class="page-heading">
     <div>
       <p>Mis solicitudes</p>
-      <h2>Historial de servicios solicitados</h2>
-      <span>Consulte el estado y detalle de sus atenciones medicas.</span>
+      <h2>Propuestas y especialistas</h2>
+      <span>
+        Compare costos, tiempos de llegada y elija
+        libremente al especialista que atenderá su solicitud.
+      </span>
     </div>
 
-    <button type="button" (click)="load()" [disabled]="loading()">
+    <button
+      type="button"
+      (click)="load()"
+      [disabled]="loading()">
       {{ loading() ? 'Actualizando...' : 'Actualizar' }}
     </button>
   </div>
 
   @if (errorMessage()) {
-    <div class="error-message">{{ errorMessage() }}</div>
+    <div class="error-message">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="success-message">
+      {{ successMessage() }}
+    </div>
   }
 
   <div class="filters-card">
     <div>
-      <p>Busqueda</p>
+      <p>Búsqueda</p>
       <h3>Filtrar solicitudes</h3>
     </div>
 
@@ -28,23 +42,38 @@
           type="text"
           [ngModel]="searchTerm()"
           (ngModelChange)="updateSearchTerm($event)"
-          placeholder="Codigo, servicio, direccion, estado..."
+          placeholder="Código, servicio, especialista, dirección..."
         />
       </label>
 
       <label>
         Estado
-        <select [ngModel]="statusFilter()" (ngModelChange)="updateStatusFilter($event)">
+        <select
+          [ngModel]="statusFilter()"
+          (ngModelChange)="updateStatusFilter($event)">
           <option value="ALL">Todos</option>
-          <option value="PENDING">Pendientes</option>
-          <option value="ACCEPTED">Aceptadas</option>
-          <option value="EN_CAMINO">En camino</option>
-          <option value="EN_ATENCION">En atencion</option>
-          <option value="FINALIZADO">Finalizadas</option>
+          <option value="PENDING">
+            Esperando propuestas
+          </option>
+          <option value="ACCEPTED">
+            Especialista elegido
+          </option>
+          <option value="EN_CAMINO">
+            En camino
+          </option>
+          <option value="EN_ATENCION">
+            En atención
+          </option>
+          <option value="FINALIZADO">
+            Finalizadas
+          </option>
         </select>
       </label>
 
-      <button type="button" class="secondary-button" (click)="clearFilters()">
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="clearFilters()">
         Limpiar
       </button>
     </div>
@@ -52,45 +81,313 @@
 
   <div class="section-card">
     <div class="section-title">
-      <h3>Solicitudes registradas</h3>
-      <span>{{ filteredRequests().length }} de {{ requests().length }} registro(s)</span>
+      <div>
+        <p>Proceso de elección</p>
+        <h3>Solicitudes registradas</h3>
+      </div>
+
+      <span>
+        {{ filteredRequests().length }}
+        de
+        {{ requests().length }}
+        registro(s)
+      </span>
     </div>
 
     @if (loading()) {
-      <div class="empty-state">Cargando solicitudes...</div>
+      <div class="empty-state">
+        Cargando solicitudes...
+      </div>
     } @else if (requests().length === 0) {
-      <div class="empty-state">Aun no tiene solicitudes registradas.</div>
-    } @else if (filteredRequests().length === 0) {
-      <div class="empty-state">No hay resultados con los filtros aplicados.</div>
+      <div class="empty-state">
+        Aún no tiene solicitudes registradas.
+      </div>
+    } @else if (
+      filteredRequests().length === 0
+    ) {
+      <div class="empty-state">
+        No hay resultados con los filtros aplicados.
+      </div>
     } @else {
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Codigo</th>
+              <th>Código</th>
               <th>Servicio</th>
               <th>Estado</th>
-              <th>Especialista</th>
-              <th>Monto</th>
+              <th>Especialista elegido</th>
+              <th>Costo acordado</th>
               <th>Fecha</th>
+              <th>Propuestas</th>
             </tr>
           </thead>
 
           <tbody>
-            @for (request of filteredRequests(); track request.id) {
+            @for (
+              request of filteredRequests();
+              track request.id
+            ) {
               <tr>
                 <td>
-                  <strong>{{ request.requestCode }}</strong>
-                  <small>{{ request.addressText }}</small>
+                  <strong>
+                    {{ request.requestCode }}
+                  </strong>
+
+                  <small>
+                    {{ request.addressText }}
+                  </small>
                 </td>
-                <td>{{ request.serviceName }}</td>
+
                 <td>
-                  <span class="status-badge">{{ statusLabel(request.status) }}</span>
+                  {{ request.serviceName }}
+
+                  <small>
+                    {{ request.professionName }}
+                  </small>
                 </td>
-                <td>{{ request.acceptedSpecialistFullName || 'Pendiente de asignacion' }}</td>
-                <td>S/{{ (request.estimatedAmount ?? 0) | number:'1.2-2' }}</td>
-                <td>{{ request.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+
+                <td>
+                  <span
+                    class="status-badge"
+                    [ngClass]="requestStatusClass(request.status)">
+                    {{ requestStatusLabel(request.status) }}
+                  </span>
+                </td>
+
+                <td>
+                  {{
+                    request.acceptedSpecialistFullName
+                    || 'Pendiente de elección'
+                  }}
+                </td>
+
+                <td>
+                  @if (
+                    request.status !== 'PENDING'
+                    && request.acceptedSpecialistProfileId !== null
+                    && request.acceptedSpecialistProfileId !== undefined
+                    && request.estimatedAmount !== null
+                    && request.estimatedAmount !== undefined
+                  ) {
+                    <strong class="agreed-amount">
+                      S/
+                      {{
+                        request.estimatedAmount
+                          | number:'1.2-2'
+                      }}
+                    </strong>
+                  } @else {
+                    <span class="pending-value">
+                      Por definir
+                    </span>
+                  }
+                </td>
+
+                <td>
+                  {{
+                    request.createdAt
+                      | date:'dd/MM/yyyy HH:mm'
+                  }}
+                </td>
+
+                <td>
+                  <button
+                    type="button"
+                    class="proposal-toggle-button"
+                    (click)="toggleProposals(request)">
+                    {{
+                      expandedRequestId() === request.id
+                        ? 'Ocultar propuestas'
+                        : 'Ver y comparar'
+                    }}
+                  </button>
+                </td>
               </tr>
+
+              @if (
+                expandedRequestId() === request.id
+              ) {
+                <tr class="proposal-detail-row">
+                  <td colspan="7">
+                    <div class="proposal-panel">
+                      <div class="proposal-panel-heading">
+                        <div>
+                          <span>
+                            Propuestas recibidas
+                          </span>
+
+                          <h4>
+                            Compare costo total y llegada
+                          </h4>
+                        </div>
+
+                        <small>
+                          La elección asignará al especialista
+                          y congelará el costo acordado.
+                        </small>
+                      </div>
+
+                      @if (
+                        proposalLoadingRequestId()
+                        === request.id
+                      ) {
+                        <div class="empty-state">
+                          Cargando propuestas...
+                        </div>
+                      } @else if (
+                        sortedProposals(request.id).length
+                        === 0
+                      ) {
+                        <div class="empty-state">
+                          Todavía no existen propuestas
+                          para esta solicitud.
+                        </div>
+                      } @else {
+                        <div class="proposal-grid">
+                          @for (
+                            proposal of sortedProposals(request.id);
+                            track proposal.proposalId
+                          ) {
+                            <article
+                              class="proposal-card"
+                              [class.selected-proposal]="proposal.status === 'ACCEPTED'">
+
+                              <div class="proposal-card-top">
+                                <div>
+                                  <span>Especialista</span>
+
+                                  <h5>
+                                    {{ proposal.specialistFullName }}
+                                  </h5>
+
+                                  <small>
+                                    {{ proposal.professionName }}
+                                  </small>
+                                </div>
+
+                                <span
+                                  class="proposal-status"
+                                  [ngClass]="proposalStatusClass(proposal.status)">
+                                  {{ proposalStatusLabel(proposal.status) }}
+                                </span>
+                              </div>
+
+                              @if (
+                                proposal.status === 'ACCEPTED'
+                              ) {
+                                <div class="selected-banner">
+                                  Especialista seleccionado
+                                </div>
+                              }
+
+                              <div class="proposal-cost">
+                                <div>
+                                  <span>
+                                    Servicio
+                                  </span>
+
+                                  <strong>
+                                    S/
+                                    {{
+                                      proposal.serviceAmount
+                                        | number:'1.2-2'
+                                    }}
+                                  </strong>
+                                </div>
+
+                                <div>
+                                  <span>
+                                    {{
+                                      mobilityPolicyLabel(
+                                        proposal.mobilityPolicy
+                                      )
+                                    }}
+                                  </span>
+
+                                  <strong>
+                                    S/
+                                    {{
+                                      proposal.mobilityAmount
+                                        | number:'1.2-2'
+                                    }}
+                                  </strong>
+                                </div>
+
+                                <div class="proposal-total">
+                                  <span>Total</span>
+
+                                  <strong>
+                                    S/
+                                    {{
+                                      proposal.totalAmount
+                                        | number:'1.2-2'
+                                    }}
+                                  </strong>
+                                </div>
+                              </div>
+
+                              <div class="proposal-facts">
+                                <span>
+                                  Llegada estimada
+                                  <b>
+                                    {{
+                                      proposal.estimatedArrivalMinutes
+                                    }}
+                                    minutos
+                                  </b>
+                                </span>
+
+                                <span>
+                                  Vigente hasta
+                                  <b>
+                                    {{
+                                      proposal.expiresAt
+                                        | date:'dd/MM/yyyy HH:mm'
+                                    }}
+                                  </b>
+                                </span>
+                              </div>
+
+                              @if (proposal.message) {
+                                <div class="proposal-message">
+                                  <span>
+                                    Mensaje del especialista
+                                  </span>
+
+                                  <p>
+                                    {{ proposal.message }}
+                                  </p>
+                                </div>
+                              }
+
+                              @if (
+                                canAcceptProposal(
+                                  request,
+                                  proposal
+                                )
+                              ) {
+                                <button
+                                  type="button"
+                                  class="accept-proposal-button"
+                                  (click)="acceptProposal(request, proposal)"
+                                  [disabled]="acceptLoadingProposalId() === proposal.proposalId">
+                                  {{
+                                    acceptLoadingProposalId()
+                                    === proposal.proposalId
+                                      ? 'Confirmando elección...'
+                                      : 'Elegir este especialista'
+                                  }}
+                                </button>
+                              }
+                            </article>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
             }
           </tbody>
         </table>
@@ -98,3 +395,161 @@
     }
   </div>
 </section>
+@if (proposalConfirmation(); as confirmation) {
+  <div
+    class="proposal-confirmation-backdrop"
+    (click)="closeProposalConfirmation()">
+
+    <section
+      class="proposal-confirmation-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="proposal-confirmation-title"
+      (click)="$event.stopPropagation()">
+
+      <button
+        type="button"
+        class="proposal-confirmation-close"
+        aria-label="Cerrar confirmación"
+        (click)="closeProposalConfirmation()"
+        [disabled]="acceptLoadingProposalId() !== null">
+        ×
+      </button>
+
+      <div class="proposal-confirmation-icon">
+        <span>MD</span>
+      </div>
+
+      <div class="proposal-confirmation-heading">
+        <p>Confirmación de elección</p>
+
+        <h3 id="proposal-confirmation-title">
+          ¿Desea elegir a
+          {{ confirmation.proposal.specialistFullName }}?
+        </h3>
+
+        <span>
+          Revise el resumen antes de asignar definitivamente
+          al especialista.
+        </span>
+      </div>
+
+      <div class="proposal-confirmation-specialist">
+        <div>
+          <span>Especialista seleccionado</span>
+
+          <strong>
+            {{ confirmation.proposal.specialistFullName }}
+          </strong>
+
+          <small>
+            {{ confirmation.proposal.professionName }}
+          </small>
+        </div>
+
+        <div class="proposal-confirmation-arrival">
+          <span>Llegada estimada</span>
+
+          <strong>
+            {{
+              confirmation.proposal.estimatedArrivalMinutes
+            }}
+            min
+          </strong>
+        </div>
+      </div>
+
+      <div class="proposal-confirmation-cost">
+        <div>
+          <span>Servicio</span>
+
+          <strong>
+            S/
+            {{
+              confirmation.proposal.serviceAmount
+                | number:'1.2-2'
+            }}
+          </strong>
+        </div>
+
+        <div>
+          <span>
+            {{
+              mobilityPolicyLabel(
+                confirmation.proposal.mobilityPolicy
+              )
+            }}
+          </span>
+
+          <strong>
+            S/
+            {{
+              confirmation.proposal.mobilityAmount
+                | number:'1.2-2'
+            }}
+          </strong>
+        </div>
+
+        <div class="proposal-confirmation-total">
+          <span>Total acordado</span>
+
+          <strong>
+            S/
+            {{
+              confirmation.proposal.totalAmount
+                | number:'1.2-2'
+            }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="proposal-confirmation-notice">
+        <div class="proposal-confirmation-notice-icon">
+          ✓
+        </div>
+
+        <p>
+          Al confirmar, la solicitud será asignada a este
+          especialista, el costo quedará congelado en
+          <b>
+            S/
+            {{
+              confirmation.proposal.totalAmount
+                | number:'1.2-2'
+            }}
+          </b>
+          y las demás propuestas dejarán de estar disponibles.
+        </p>
+      </div>
+
+      @if (proposalConfirmationError()) {
+        <div class="proposal-confirmation-error">
+          {{ proposalConfirmationError() }}
+        </div>
+      }
+
+      <div class="proposal-confirmation-actions">
+        <button
+          type="button"
+          class="proposal-confirmation-cancel"
+          (click)="closeProposalConfirmation()"
+          [disabled]="acceptLoadingProposalId() !== null">
+          Volver y revisar
+        </button>
+
+        <button
+          type="button"
+          class="proposal-confirmation-accept"
+          (click)="confirmProposalSelection()"
+          [disabled]="acceptLoadingProposalId() !== null">
+          {{
+            acceptLoadingProposalId()
+              === confirmation.proposal.proposalId
+                ? 'Confirmando elección...'
+                : 'Confirmar especialista'
+          }}
+        </button>
+      </div>
+    </section>
+  </div>
+}

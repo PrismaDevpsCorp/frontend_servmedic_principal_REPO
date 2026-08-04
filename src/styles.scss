@@ -17,3 +17,299 @@ button,
 input {
   font: inherit;
 }
+
+/* MEDICDRIVE: MODAL ELECCION DE ESPECIALISTA */
+
+.proposal-confirmation-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.66);
+  backdrop-filter: blur(8px);
+  animation: proposal-backdrop-in 160ms ease-out;
+}
+
+.proposal-confirmation-modal {
+  position: relative;
+  width: min(100%, 620px);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 30px;
+  padding: 30px;
+  background: #ffffff;
+  box-shadow:
+    0 35px 90px rgba(15, 23, 42, 0.34);
+  animation: proposal-modal-in 180ms ease-out;
+}
+
+.proposal-confirmation-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  padding: 0;
+  color: #475569;
+  background: #f1f5f9;
+  font-size: 25px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.proposal-confirmation-icon {
+  display: grid;
+  width: 62px;
+  height: 62px;
+  place-items: center;
+  border-radius: 20px;
+  color: #ffffff;
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e,
+      #14b8a6,
+      #2563eb
+    );
+  box-shadow:
+    0 16px 32px
+    rgba(20, 184, 166, 0.24);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.proposal-confirmation-heading {
+  margin-top: 20px;
+}
+
+.proposal-confirmation-heading p {
+  margin: 0 0 8px;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.proposal-confirmation-heading h3 {
+  margin: 0;
+  padding-right: 30px;
+  color: #102033;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.proposal-confirmation-heading > span {
+  display: block;
+  margin-top: 10px;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+.proposal-confirmation-specialist {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin-top: 24px;
+  border: 1px solid #ccfbf1;
+  border-radius: 20px;
+  padding: 18px;
+  background: #f0fdfa;
+}
+
+.proposal-confirmation-specialist span,
+.proposal-confirmation-specialist strong,
+.proposal-confirmation-specialist small {
+  display: block;
+}
+
+.proposal-confirmation-specialist span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.proposal-confirmation-specialist strong {
+  margin-top: 5px;
+  color: #102033;
+  font-size: 19px;
+}
+
+.proposal-confirmation-specialist small {
+  margin-top: 4px;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.proposal-confirmation-arrival {
+  min-width: 130px;
+  border-radius: 16px;
+  padding: 13px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.proposal-confirmation-arrival strong {
+  color: #0f766e;
+  font-size: 21px;
+}
+
+.proposal-confirmation-cost {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  border-radius: 20px;
+  padding: 18px;
+  background: #f8fafc;
+}
+
+.proposal-confirmation-cost > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: #64748b;
+}
+
+.proposal-confirmation-cost strong {
+  color: #102033;
+}
+
+.proposal-confirmation-total {
+  margin-top: 3px;
+  border-top: 1px solid #cbd5e1;
+  padding-top: 14px;
+}
+
+.proposal-confirmation-total span,
+.proposal-confirmation-total strong {
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.proposal-confirmation-total strong {
+  font-size: 25px;
+}
+
+.proposal-confirmation-notice {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+  margin-top: 18px;
+  border: 1px solid #bfdbfe;
+  border-radius: 18px;
+  padding: 16px;
+  color: #1e3a8a;
+  background: #eff6ff;
+}
+
+.proposal-confirmation-notice-icon {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #2563eb;
+  font-weight: 900;
+}
+
+.proposal-confirmation-notice p {
+  margin: 2px 0 0;
+  line-height: 1.55;
+}
+
+.proposal-confirmation-error {
+  margin-top: 16px;
+  border-radius: 16px;
+  padding: 14px;
+  color: #991b1b;
+  background: #fee2e2;
+  font-weight: 900;
+}
+
+.proposal-confirmation-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.proposal-confirmation-cancel {
+  color: #334155;
+  background: #e2e8f0;
+}
+
+.proposal-confirmation-accept {
+  min-height: 50px;
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e,
+      #14b8a6,
+      #2563eb
+    );
+  box-shadow:
+    0 12px 26px
+    rgba(37, 99, 235, 0.2);
+}
+
+@keyframes proposal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes proposal-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .proposal-confirmation-backdrop {
+    align-items: end;
+    padding: 12px;
+  }
+
+  .proposal-confirmation-modal {
+    border-radius: 24px;
+    padding: 24px 18px 20px;
+  }
+
+  .proposal-confirmation-heading h3 {
+    font-size: 23px;
+  }
+
+  .proposal-confirmation-specialist {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .proposal-confirmation-arrival {
+    text-align: left;
+  }
+
+  .proposal-confirmation-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* FIN MEDICDRIVE: MODAL ELECCION DE ESPECIALISTA */

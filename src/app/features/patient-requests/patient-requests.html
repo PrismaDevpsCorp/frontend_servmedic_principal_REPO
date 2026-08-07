@@ -117,9 +117,9 @@
               <th>Servicio</th>
               <th>Estado</th>
               <th>Especialista elegido</th>
-              <th>Costo acordado</th>
+              <th>Total vigente</th>
               <th>Fecha</th>
-              <th>Propuestas</th>
+              <th>Gestión</th>
             </tr>
           </thead>
 
@@ -173,10 +173,35 @@
                     <strong class="agreed-amount">
                       S/
                       {{
-                        request.estimatedAmount
+                        requestCurrentTotal(request)
                           | number:'1.2-2'
                       }}
                     </strong>
+
+                    <small class="patient-original-total">
+                      Original:
+                      S/
+                      {{
+                        requestOriginalTotal(request)
+                          | number:'1.2-2'
+                      }}
+                    </small>
+
+                    @if (
+                      requestApprovedAdditionalsAmount(
+                        request.id
+                      ) > 0
+                    ) {
+                      <small class="patient-approved-additional">
+                        + S/
+                        {{
+                          requestApprovedAdditionalsAmount(
+                            request.id
+                          ) | number:'1.2-2'
+                        }}
+                        aprobado(s)
+                      </small>
+                    }
                   } @else {
                     <span class="pending-value">
                       Por definir
@@ -192,16 +217,40 @@
                 </td>
 
                 <td>
-                  <button
-                    type="button"
-                    class="proposal-toggle-button"
-                    (click)="toggleProposals(request)">
-                    {{
-                      expandedRequestId() === request.id
-                        ? 'Ocultar propuestas'
-                        : 'Ver y comparar'
-                    }}
-                  </button>
+                  <div class="patient-request-actions">
+                    <button
+                      type="button"
+                      class="proposal-toggle-button"
+                      (click)="toggleProposals(request)">
+                      {{
+                        expandedRequestId() === request.id
+                          ? 'Ocultar propuestas'
+                          : 'Ver propuestas'
+                      }}
+                    </button>
+
+                    @if (supportsAdditionals(request)) {
+                      <button
+                        type="button"
+                        class="patient-additional-toggle-button"
+                        (click)="toggleAdditionals(request)"
+                        [disabled]="
+                          additionalLoadingRequestId()
+                          === request.id
+                        ">
+                        {{
+                          expandedAdditionalRequestId()
+                          === request.id
+                            ? 'Ocultar adicionales'
+                            : (
+                                hasPendingAdditionals(request.id)
+                                  ? 'Adicionales pendientes'
+                                  : 'Ver adicionales'
+                              )
+                        }}
+                      </button>
+                    }
+                  </div>
                 </td>
               </tr>
 
@@ -388,7 +437,270 @@
                   </td>
                 </tr>
               }
-            }
+
+              @if (
+                expandedAdditionalRequestId()
+                === request.id
+              ) {
+                <tr class="patient-additional-detail-row">
+                  <td colspan="7">
+                    <section class="patient-additional-panel">
+                      <div class="patient-additional-heading">
+                        <div>
+                          <span>Cargos durante la atención</span>
+
+                          <h4>
+                            Adicionales de
+                            {{ request.requestCode }}
+                          </h4>
+
+                          <p>
+                            Revise cada cargo solicitado por
+                            {{ request.acceptedSpecialistFullName
+                               || 'el especialista' }}.
+                          </p>
+                        </div>
+
+                        @if (
+                          pendingAdditionalsCount(
+                            request.id
+                          ) > 0
+                        ) {
+                          <span class="patient-additional-pending-badge">
+                            {{
+                              pendingAdditionalsCount(
+                                request.id
+                              )
+                            }}
+                            pendiente(s)
+                          </span>
+                        }
+                      </div>
+
+                      <div class="patient-additional-summary">
+                        <article>
+                          <span>Total original</span>
+
+                          <strong>
+                            S/
+                            {{
+                              requestOriginalTotal(request)
+                                | number:'1.2-2'
+                            }}
+                          </strong>
+                        </article>
+
+                        <article>
+                          <span>Adicionales aprobados</span>
+
+                          <strong>
+                            S/
+                            {{
+                              requestApprovedAdditionalsAmount(
+                                request.id
+                              ) | number:'1.2-2'
+                            }}
+                          </strong>
+                        </article>
+
+                        <article class="patient-current-total-card">
+                          <span>Total vigente</span>
+
+                          <strong>
+                            S/
+                            {{
+                              requestCurrentTotal(request)
+                                | number:'1.2-2'
+                            }}
+                          </strong>
+                        </article>
+                      </div>
+
+                      @if (
+                        hasPendingAdditionals(request.id)
+                      ) {
+                        <div class="patient-additional-notice">
+                          El especialista solicitó uno o más
+                          cargos adicionales. Revise el concepto,
+                          importe y justificación antes de decidir.
+                        </div>
+                      }
+
+                      @if (
+                        additionalLoadingRequestId()
+                        === request.id
+                      ) {
+                        <div class="empty-state">
+                          Cargando cargos adicionales...
+                        </div>
+                      } @else if (
+                        additionalsFor(request.id).length
+                        === 0
+                      ) {
+                        <div class="empty-state">
+                          Esta solicitud no tiene cargos
+                          adicionales registrados.
+                        </div>
+                      } @else {
+                        <div class="patient-additional-list">
+                          @for (
+                            additional of additionalsFor(
+                              request.id
+                            );
+                            track additional.additionalId
+                          ) {
+                            <article class="patient-additional-card">
+                              <div class="patient-additional-card-top">
+                                <div>
+                                  <span>
+                                    Cargo adicional
+                                    #{{ additional.additionalId }}
+                                  </span>
+
+                                  <h5>
+                                    {{ additional.concept }}
+                                  </h5>
+                                </div>
+
+                                <span
+                                  class="patient-additional-status"
+                                  [ngClass]="
+                                    additionalStatusClass(
+                                      additional.status
+                                    )
+                                  ">
+                                  {{
+                                    additionalStatusLabel(
+                                      additional.status
+                                    )
+                                  }}
+                                </span>
+                              </div>
+
+                              <div class="patient-additional-specialist">
+                                <span>Solicitado por</span>
+
+                                <strong>
+                                  {{
+                                    additional.specialistFullName
+                                  }}
+                                </strong>
+                              </div>
+
+                              <div class="patient-additional-amount">
+                                <span>Importe solicitado</span>
+
+                                <strong>
+                                  S/
+                                  {{
+                                    additional.amount
+                                      | number:'1.2-2'
+                                  }}
+                                </strong>
+                              </div>
+
+                              <div class="patient-additional-justification">
+                                <span>Justificación</span>
+
+                                <p>
+                                  {{ additional.justification }}
+                                </p>
+                              </div>
+
+                              <div class="patient-additional-dates">
+                                <span>
+                                  Solicitado:
+                                  <b>
+                                    {{
+                                      additional.createdAt
+                                        | date:'dd/MM/yyyy HH:mm'
+                                    }}
+                                  </b>
+                                </span>
+
+                                @if (additional.respondedAt) {
+                                  <span>
+                                    Respondido:
+                                    <b>
+                                      {{
+                                        additional.respondedAt
+                                          | date:'dd/MM/yyyy HH:mm'
+                                      }}
+                                    </b>
+                                  </span>
+                                }
+
+                                @if (additional.withdrawnAt) {
+                                  <span>
+                                    Retirado:
+                                    <b>
+                                      {{
+                                        additional.withdrawnAt
+                                          | date:'dd/MM/yyyy HH:mm'
+                                      }}
+                                    </b>
+                                  </span>
+                                }
+                              </div>
+
+                              @if (
+                                canDecideAdditional(
+                                  request,
+                                  additional
+                                )
+                              ) {
+                                <div class="patient-additional-actions">
+                                  <button
+                                    type="button"
+                                    class="patient-additional-approve"
+                                    (click)="
+                                      approveAdditional(
+                                        request,
+                                        additional
+                                      )
+                                    "
+                                    [disabled]="
+                                      additionalActionLoadingId()
+                                      === additional.additionalId
+                                    ">
+                                    {{
+                                      additionalActionLoadingId()
+                                      === additional.additionalId
+                                        ? 'Procesando...'
+                                        : 'Aprobar cargo'
+                                    }}
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    class="patient-additional-reject"
+                                    (click)="
+                                      rejectAdditional(
+                                        request,
+                                        additional
+                                      )
+                                    "
+                                    [disabled]="
+                                      additionalActionLoadingId()
+                                      === additional.additionalId
+                                    ">
+                                    {{
+                                      additionalActionLoadingId()
+                                      === additional.additionalId
+                                        ? 'Procesando...'
+                                        : 'Rechazar cargo'
+                                    }}
+                                  </button>
+                                </div>
+                              }
+                            </article>
+                          }
+                        </div>
+                      }
+                    </section>
+                  </td>
+                </tr>
+              }            }
           </tbody>
         </table>
       </div>

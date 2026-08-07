@@ -10,6 +10,10 @@ import {
   map,
   of
 } from 'rxjs';
+import {
+  CreateMedicalRequestAdditionalPayload,
+  MedicalRequestAdditional
+} from '../../core/models/medical-request-additional.model';
 import { MedicalRequest } from '../../core/models/medical-request.model';
 import {
   MedicalRequestProposal
@@ -26,6 +30,9 @@ import {
 import {
   SpecialistMedicalRequestProposalService
 } from '../../core/services/specialist-medical-request-proposal.service';
+import {
+  SpecialistMedicalRequestAdditionalService
+} from '../../core/services/specialist-medical-request-additional.service';
 import {
   SpecialistMedicalRequestService
 } from '../../core/services/specialist-medical-request.service';
@@ -63,6 +70,9 @@ export class Requests {
   private readonly requestService =
     inject(SpecialistMedicalRequestService);
 
+  private readonly additionalService =
+    inject(SpecialistMedicalRequestAdditionalService);
+
   private readonly proposalService =
     inject(SpecialistMedicalRequestProposalService);
 
@@ -74,6 +84,28 @@ export class Requests {
 
   pendingRequests = signal<MedicalRequest[]>([]);
   assignedRequests = signal<MedicalRequest[]>([]);
+
+  additionalsByRequestId =
+    signal<Record<number, MedicalRequestAdditional[]>>({});
+
+  loadedAdditionalRequestIds =
+    signal<Record<number, boolean>>({});
+
+  expandedAdditionalRequestId =
+    signal<number | null>(null);
+
+  additionalLoadingRequestId =
+    signal<number | null>(null);
+
+  additionalActionLoadingId =
+    signal<number | null>(null);
+
+  additionalEditorRequestId =
+    signal<number | null>(null);
+
+  additionalConcept = '';
+  additionalJustification = '';
+  additionalAmount: number | null = null;
 
   selectedMapRequest =
     signal<MedicalRequest | null>(null);
@@ -1162,5 +1194,476 @@ export class Requests {
       response.message
       ?? fallbackMessage
     );
+  }
+
+  supportsAdditionals(
+    request: MedicalRequest
+  ): boolean {
+    return [
+      'ACCEPTED',
+      'EN_CAMINO',
+      'EN_ATENCION',
+      'FINALIZADO'
+    ].includes(request.status);
+  }
+
+  canCreateAdditional(
+    request: MedicalRequest
+  ): boolean {
+    return request.status === 'EN_ATENCION';
+  }
+
+  canWithdrawAdditional(
+    request: MedicalRequest,
+    additional: MedicalRequestAdditional
+  ): boolean {
+    return (
+      request.status === 'EN_ATENCION'
+      && additional.status === 'PENDING'
+    );
+  }
+
+  toggleAdditionals(
+    request: MedicalRequest
+  ): void {
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    if (
+      this.expandedAdditionalRequestId()
+      === request.id
+    ) {
+      this.expandedAdditionalRequestId.set(null);
+      this.closeAdditionalEditor();
+      return;
+    }
+
+    this.expandedAdditionalRequestId.set(
+      request.id
+    );
+
+    this.loadAdditionalList(
+      request.id,
+      true
+    );
+  }
+
+  additionalsFor(
+    requestId: number
+  ): MedicalRequestAdditional[] {
+    return (
+      this.additionalsByRequestId()[requestId]
+      ?? []
+    );
+  }
+
+  hasPendingAdditionals(
+    requestId: number
+  ): boolean {
+    return this.additionalsFor(requestId)
+      .some(
+        (additional) =>
+          additional.status === 'PENDING'
+      );
+  }
+
+  requestOriginalTotal(
+    request: MedicalRequest
+  ): number {
+    const first =
+      this.additionalsFor(request.id)[0];
+
+    return Number(
+      first?.originalTotalAmount
+      ?? request.estimatedAmount
+      ?? 0
+    );
+  }
+
+  requestApprovedAdditionalsAmount(
+    requestId: number
+  ): number {
+    const first =
+      this.additionalsFor(requestId)[0];
+
+    return Number(
+      first?.approvedAdditionalsAmount
+      ?? 0
+    );
+  }
+
+  requestCurrentTotal(
+    request: MedicalRequest
+  ): number {
+    const first =
+      this.additionalsFor(request.id)[0];
+
+    return Number(
+      first?.currentTotalAmount
+      ?? request.estimatedAmount
+      ?? 0
+    );
+  }
+
+  openAdditionalEditor(
+    request: MedicalRequest
+  ): void {
+    if (!this.canCreateAdditional(request)) {
+      this.errorMessage.set(
+        'Los adicionales solo pueden registrarse durante la atención.'
+      );
+
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.additionalConcept = '';
+    this.additionalJustification = '';
+    this.additionalAmount = null;
+
+    this.additionalEditorRequestId.set(
+      request.id
+    );
+  }
+
+  closeAdditionalEditor(): void {
+    this.additionalEditorRequestId.set(null);
+    this.additionalConcept = '';
+    this.additionalJustification = '';
+    this.additionalAmount = null;
+  }
+
+  submitAdditional(
+    request: MedicalRequest
+  ): void {
+    if (!this.canCreateAdditional(request)) {
+      this.errorMessage.set(
+        'La solicitud debe estar en atención para registrar adicionales.'
+      );
+
+      return;
+    }
+
+    const concept =
+      this.additionalConcept.trim();
+
+    const justification =
+      this.additionalJustification.trim();
+
+    const amount =
+      Number(this.additionalAmount);
+
+    if (
+      concept.length < 3
+      || concept.length > 120
+    ) {
+      this.errorMessage.set(
+        'El concepto debe tener entre 3 y 120 caracteres.'
+      );
+
+      return;
+    }
+
+    if (
+      justification.length < 10
+      || justification.length > 1000
+    ) {
+      this.errorMessage.set(
+        'La justificación debe tener entre 10 y 1000 caracteres.'
+      );
+
+      return;
+    }
+
+    if (
+      !Number.isFinite(amount)
+      || amount < 0.01
+      || amount > 99999999.99
+    ) {
+      this.errorMessage.set(
+        'El importe debe estar entre S/ 0.01 y S/ 99,999,999.99.'
+      );
+
+      return;
+    }
+
+    const amountInCents = amount * 100;
+
+    if (
+      Math.abs(
+        amountInCents
+        - Math.round(amountInCents)
+      ) > 0.00000001
+    ) {
+      this.errorMessage.set(
+        'El importe admite como máximo dos decimales.'
+      );
+
+      return;
+    }
+
+    const payload:
+      CreateMedicalRequestAdditionalPayload = {
+        concept,
+        justification,
+        amount
+      };
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.additionalActionLoadingId.set(
+      request.id
+    );
+
+    this.additionalService
+      .create(
+        request.id,
+        payload
+      )
+      .pipe(
+        finalize(
+          () =>
+            this.additionalActionLoadingId.set(
+              null
+            )
+        )
+      )
+      .subscribe({
+        next: (additional) => {
+          this.upsertAdditional(additional);
+          this.closeAdditionalEditor();
+
+          this.successMessage.set(
+            'El cargo adicional fue enviado al paciente para su decisión.'
+          );
+        },
+        error: (error: unknown) => {
+          this.errorMessage.set(
+            this.extractErrorMessage(
+              error,
+              'No se pudo registrar el cargo adicional.'
+            )
+          );
+        }
+      });
+  }
+
+  withdrawAdditional(
+    request: MedicalRequest,
+    additional: MedicalRequestAdditional
+  ): void {
+    if (
+      !this.canWithdrawAdditional(
+        request,
+        additional
+      )
+    ) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      '¿Desea retirar este cargo adicional pendiente?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.additionalActionLoadingId.set(
+      request.id
+    );
+
+    this.additionalService
+      .withdraw(
+        request.id,
+        additional.additionalId
+      )
+      .pipe(
+        finalize(
+          () =>
+            this.additionalActionLoadingId.set(
+              null
+            )
+        )
+      )
+      .subscribe({
+        next: (updated) => {
+          this.upsertAdditional(updated);
+
+          this.successMessage.set(
+            'El cargo adicional fue retirado correctamente.'
+          );
+        },
+        error: (error: unknown) => {
+          this.errorMessage.set(
+            this.extractErrorMessage(
+              error,
+              'No se pudo retirar el cargo adicional.'
+            )
+          );
+        }
+      });
+  }
+
+  finishWithAdditionalGuard(
+    request: MedicalRequest
+  ): void {
+    if (
+      this.hasPendingAdditionals(
+        request.id
+      )
+    ) {
+      this.errorMessage.set(
+        'No se puede finalizar mientras exista un cargo adicional pendiente.'
+      );
+
+      return;
+    }
+
+    this.finish(request);
+  }
+
+  additionalStatusLabel(
+    status: string
+  ): string {
+    const labels: Record<string, string> = {
+      PENDING: 'Pendiente de decisión',
+      APPROVED: 'Aprobado',
+      REJECTED: 'Rechazado',
+      WITHDRAWN: 'Retirado'
+    };
+
+    return labels[status] ?? status;
+  }
+
+  additionalStatusClass(
+    status: string
+  ): string {
+    return (
+      'additional-status-'
+      + status.toLowerCase()
+    );
+  }
+
+  private loadAdditionalList(
+    requestId: number,
+    force = false
+  ): void {
+    if (
+      !force
+      && this.loadedAdditionalRequestIds()[
+        requestId
+      ]
+    ) {
+      return;
+    }
+
+    this.additionalLoadingRequestId.set(
+      requestId
+    );
+
+    this.additionalService
+      .list(requestId)
+      .pipe(
+        finalize(
+          () =>
+            this.additionalLoadingRequestId.set(
+              null
+            )
+        )
+      )
+      .subscribe({
+        next: (items) => {
+          const sorted = [...items].sort(
+            (first, second) =>
+              this.additionalDateValue(
+                first.createdAt
+              )
+              - this.additionalDateValue(
+                second.createdAt
+              )
+          );
+
+          this.additionalsByRequestId.set({
+            ...this.additionalsByRequestId(),
+            [requestId]: sorted
+          });
+
+          this.loadedAdditionalRequestIds.set({
+            ...this.loadedAdditionalRequestIds(),
+            [requestId]: true
+          });
+        },
+        error: (error: unknown) => {
+          this.additionalsByRequestId.set({
+            ...this.additionalsByRequestId(),
+            [requestId]: []
+          });
+
+          this.errorMessage.set(
+            this.extractErrorMessage(
+              error,
+              'No se pudieron cargar los cargos adicionales.'
+            )
+          );
+        }
+      });
+  }
+
+  private upsertAdditional(
+    additional: MedicalRequestAdditional
+  ): void {
+    const requestId =
+      additional.medicalRequestId;
+
+    const current =
+      this.additionalsByRequestId()[
+        requestId
+      ] ?? [];
+
+    const updated = [
+      ...current.filter(
+        (item) =>
+          item.additionalId
+          !== additional.additionalId
+      ),
+      additional
+    ].sort(
+      (first, second) =>
+        this.additionalDateValue(
+          first.createdAt
+        )
+        - this.additionalDateValue(
+          second.createdAt
+        )
+    );
+
+    this.additionalsByRequestId.set({
+      ...this.additionalsByRequestId(),
+      [requestId]: updated
+    });
+
+    this.loadedAdditionalRequestIds.set({
+      ...this.loadedAdditionalRequestIds(),
+      [requestId]: true
+    });
+  }
+
+  private additionalDateValue(
+    value?: string | null
+  ): number {
+    const parsed = Date.parse(
+      value ?? ''
+    );
+
+    return Number.isFinite(parsed)
+      ? parsed
+      : 0;
   }
 }

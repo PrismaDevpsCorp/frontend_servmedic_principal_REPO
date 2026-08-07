@@ -8,11 +8,17 @@ import {
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import {
+  MedicalRequestAdditional
+} from '../../core/models/medical-request-additional.model';
+import {
   MedicalRequest
 } from '../../core/models/medical-request.model';
 import {
   MedicalRequestProposal
 } from '../../core/models/medical-request-proposal.model';
+import {
+  PatientMedicalRequestAdditionalService
+} from '../../core/services/patient-medical-request-additional.service';
 import {
   PatientMedicalRequestProposalService
 } from '../../core/services/patient-medical-request-proposal.service';
@@ -38,6 +44,9 @@ export class PatientRequests {
   private readonly patientRequestService =
     inject(PatientMedicalRequestService);
 
+  private readonly additionalService =
+    inject(PatientMedicalRequestAdditionalService);
+
   private readonly proposalService =
     inject(PatientMedicalRequestProposalService);
 
@@ -62,6 +71,18 @@ export class PatientRequests {
     signal<ProposalConfirmation | null>(null);
 
   proposalConfirmationError = signal('');
+
+  additionalsByRequestId =
+    signal<Record<number, MedicalRequestAdditional[]>>({});
+
+  expandedAdditionalRequestId =
+    signal<number | null>(null);
+
+  additionalLoadingRequestId =
+    signal<number | null>(null);
+
+  additionalActionLoadingId =
+    signal<number | null>(null);
 
   searchTerm = signal('');
   statusFilter = signal('ALL');
@@ -544,5 +565,358 @@ export class PatientRequests {
       response.message
       ?? fallbackMessage
     );
+  }
+
+  supportsAdditionals(
+    request: MedicalRequest
+  ): boolean {
+    return [
+      'ACCEPTED',
+      'EN_CAMINO',
+      'EN_ATENCION',
+      'FINALIZADO'
+    ].includes(request.status);
+  }
+
+  canDecideAdditional(
+    request: MedicalRequest,
+    additional: MedicalRequestAdditional
+  ): boolean {
+    return (
+      request.status === 'EN_ATENCION'
+      && additional.status === 'PENDING'
+    );
+  }
+
+  toggleAdditionals(
+    request: MedicalRequest
+  ): void {
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    if (
+      this.expandedAdditionalRequestId()
+      === request.id
+    ) {
+      this.expandedAdditionalRequestId.set(null);
+      return;
+    }
+
+    this.expandedAdditionalRequestId.set(
+      request.id
+    );
+
+    this.loadAdditionalList(
+      request.id
+    );
+  }
+
+  additionalsFor(
+    requestId: number
+  ): MedicalRequestAdditional[] {
+    return (
+      this.additionalsByRequestId()[
+        requestId
+      ] ?? []
+    );
+  }
+
+  hasPendingAdditionals(
+    requestId: number
+  ): boolean {
+    return this.additionalsFor(requestId)
+      .some(
+        (additional) =>
+          additional.status === 'PENDING'
+      );
+  }
+
+  pendingAdditionalsCount(
+    requestId: number
+  ): number {
+    return this.additionalsFor(requestId)
+      .filter(
+        (additional) =>
+          additional.status === 'PENDING'
+      )
+      .length;
+  }
+
+  requestOriginalTotal(
+    request: MedicalRequest
+  ): number {
+    const first =
+      this.additionalsFor(request.id)[0];
+
+    return Number(
+      first?.originalTotalAmount
+      ?? request.estimatedAmount
+      ?? 0
+    );
+  }
+
+  requestApprovedAdditionalsAmount(
+    requestId: number
+  ): number {
+    const first =
+      this.additionalsFor(requestId)[0];
+
+    return Number(
+      first?.approvedAdditionalsAmount
+      ?? 0
+    );
+  }
+
+  requestCurrentTotal(
+    request: MedicalRequest
+  ): number {
+    const first =
+      this.additionalsFor(request.id)[0];
+
+    return Number(
+      first?.currentTotalAmount
+      ?? request.estimatedAmount
+      ?? 0
+    );
+  }
+
+  approveAdditional(
+    request: MedicalRequest,
+    additional: MedicalRequestAdditional
+  ): void {
+    if (
+      !this.canDecideAdditional(
+        request,
+        additional
+      )
+    ) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      '¿Confirma la aprobación de este cargo adicional por S/ '
+      + Number(additional.amount).toFixed(2)
+      + '?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.additionalActionLoadingId.set(
+      additional.additionalId
+    );
+
+    this.additionalService
+      .approve(
+        request.id,
+        additional.additionalId
+      )
+      .pipe(
+        finalize(
+          () =>
+            this.additionalActionLoadingId.set(
+              null
+            )
+        )
+      )
+      .subscribe({
+        next: (updated) => {
+          this.upsertAdditional(updated);
+
+          this.successMessage.set(
+            'Cargo adicional aprobado correctamente.'
+          );
+        },
+        error: (error: unknown) => {
+          this.errorMessage.set(
+            this.extractErrorMessage(
+              error,
+              'No se pudo aprobar el cargo adicional.'
+            )
+          );
+        }
+      });
+  }
+
+  rejectAdditional(
+    request: MedicalRequest,
+    additional: MedicalRequestAdditional
+  ): void {
+    if (
+      !this.canDecideAdditional(
+        request,
+        additional
+      )
+    ) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      '¿Confirma que desea rechazar este cargo adicional?'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.additionalActionLoadingId.set(
+      additional.additionalId
+    );
+
+    this.additionalService
+      .reject(
+        request.id,
+        additional.additionalId
+      )
+      .pipe(
+        finalize(
+          () =>
+            this.additionalActionLoadingId.set(
+              null
+            )
+        )
+      )
+      .subscribe({
+        next: (updated) => {
+          this.upsertAdditional(updated);
+
+          this.successMessage.set(
+            'Cargo adicional rechazado correctamente.'
+          );
+        },
+        error: (error: unknown) => {
+          this.errorMessage.set(
+            this.extractErrorMessage(
+              error,
+              'No se pudo rechazar el cargo adicional.'
+            )
+          );
+        }
+      });
+  }
+
+  additionalStatusLabel(
+    status: string
+  ): string {
+    const labels: Record<string, string> = {
+      PENDING: 'Pendiente de su decisión',
+      APPROVED: 'Aprobado',
+      REJECTED: 'Rechazado',
+      WITHDRAWN: 'Retirado por el especialista'
+    };
+
+    return labels[status] ?? status;
+  }
+
+  additionalStatusClass(
+    status: string
+  ): string {
+    return (
+      'patient-additional-status-'
+      + status.toLowerCase()
+    );
+  }
+
+  private loadAdditionalList(
+    requestId: number
+  ): void {
+    this.additionalLoadingRequestId.set(
+      requestId
+    );
+
+    this.additionalService
+      .list(requestId)
+      .pipe(
+        finalize(
+          () =>
+            this.additionalLoadingRequestId.set(
+              null
+            )
+        )
+      )
+      .subscribe({
+        next: (items) => {
+          const sorted = [...items].sort(
+            (first, second) =>
+              this.additionalDateValue(
+                first.createdAt
+              )
+              - this.additionalDateValue(
+                second.createdAt
+              )
+          );
+
+          this.additionalsByRequestId.set({
+            ...this.additionalsByRequestId(),
+            [requestId]: sorted
+          });
+        },
+        error: (error: unknown) => {
+          this.additionalsByRequestId.set({
+            ...this.additionalsByRequestId(),
+            [requestId]: []
+          });
+
+          this.errorMessage.set(
+            this.extractErrorMessage(
+              error,
+              'No se pudieron cargar los cargos adicionales.'
+            )
+          );
+        }
+      });
+  }
+
+  private upsertAdditional(
+    additional: MedicalRequestAdditional
+  ): void {
+    const requestId =
+      additional.medicalRequestId;
+
+    const existing =
+      this.additionalsByRequestId()[
+        requestId
+      ] ?? [];
+
+    const updated = [
+      ...existing.filter(
+        (item) =>
+          item.additionalId
+          !== additional.additionalId
+      ),
+      additional
+    ].sort(
+      (first, second) =>
+        this.additionalDateValue(
+          first.createdAt
+        )
+        - this.additionalDateValue(
+          second.createdAt
+        )
+    );
+
+    this.additionalsByRequestId.set({
+      ...this.additionalsByRequestId(),
+      [requestId]: updated
+    });
+  }
+
+  private additionalDateValue(
+    value?: string | null
+  ): number {
+    const parsed = Date.parse(
+      value ?? ''
+    );
+
+    return Number.isFinite(parsed)
+      ? parsed
+      : 0;
   }
 }

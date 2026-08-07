@@ -313,3 +313,559 @@ input {
 }
 
 /* FIN MEDICDRIVE: MODAL ELECCION DE ESPECIALISTA */
+/* ==================================================
+   MEDICDRIVE B38.3 ADICIONALES ESPECIALISTA
+   ================================================== */
+
+.requests-page .request-current-total {
+  display: block;
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.requests-page .approved-additional-summary {
+  display: block;
+  margin-top: 5px;
+  color: #15803d;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.requests-page .additional-detail-row > td {
+  padding: 0 12px 22px;
+  background: #f8fafc;
+}
+
+.requests-page .additional-panel {
+  display: grid;
+  gap: 18px;
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.requests-page .additional-panel-heading,
+.requests-page .additional-editor-heading,
+.requests-page .additional-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.requests-page .additional-panel-heading h4,
+.requests-page .additional-editor-heading h5,
+.requests-page .additional-card-top h5 {
+  margin: 5px 0 0;
+  color: #0f172a;
+}
+
+.requests-page .additional-panel-heading p {
+  margin: 7px 0 0;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.requests-page .additional-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.requests-page .additional-summary-grid article {
+  border: 1px solid #dbe4ee;
+  border-radius: 16px;
+  padding: 15px;
+  background: #f8fafc;
+}
+
+.requests-page .additional-summary-grid span,
+.requests-page .additional-summary-grid strong {
+  display: block;
+}
+
+.requests-page .additional-summary-grid span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.requests-page .additional-summary-grid strong {
+  margin-top: 6px;
+  color: #0f172a;
+  font-size: 21px;
+}
+
+.requests-page .current-total-card {
+  border-color: #99f6e4;
+  background: #f0fdfa;
+}
+
+.requests-page .current-total-card strong {
+  color: #0f766e;
+}
+
+.requests-page .additional-warning {
+  border: 1px solid #fcd34d;
+  border-radius: 14px;
+  padding: 13px 15px;
+  color: #92400e;
+  background: #fffbeb;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.requests-page .additional-editor {
+  display: grid;
+  gap: 15px;
+  border: 2px solid #2563eb;
+  border-radius: 18px;
+  padding: 18px;
+  background: #eff6ff;
+}
+
+.requests-page .additional-form-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 0.7fr;
+  gap: 14px;
+}
+
+.requests-page .additional-editor label {
+  display: grid;
+  gap: 7px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.requests-page .additional-editor input,
+.requests-page .additional-editor textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 11px 12px;
+  color: #0f172a;
+  background: #ffffff;
+  font: inherit;
+}
+
+.requests-page .additional-editor textarea {
+  resize: vertical;
+}
+
+.requests-page .additional-editor small {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.requests-page .additional-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.requests-page .additional-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 14px;
+}
+
+.requests-page .additional-card {
+  display: grid;
+  gap: 13px;
+  border: 1px solid #dbe4ee;
+  border-radius: 18px;
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+}
+
+.requests-page .additional-status {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.requests-page .additional-status-pending {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.requests-page .additional-status-approved {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.requests-page .additional-status-rejected {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.requests-page .additional-status-withdrawn {
+  color: #475569;
+  background: #e2e8f0;
+}
+
+.requests-page .additional-amount {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.requests-page .additional-amount strong {
+  color: #1d4ed8;
+  font-size: 19px;
+}
+
+.requests-page .additional-justification {
+  border-left: 4px solid #2563eb;
+  border-radius: 0 12px 12px 0;
+  padding: 12px;
+  background: #eff6ff;
+}
+
+.requests-page .additional-justification p {
+  margin: 6px 0 0;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.requests-page .additional-dates {
+  display: grid;
+  gap: 5px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.requests-page .additional-toggle-button {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.requests-page .additional-create-button {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.requests-page .additional-withdraw-button {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@media (max-width: 760px) {
+  .requests-page .additional-summary-grid,
+  .requests-page .additional-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .requests-page .additional-panel-heading,
+  .requests-page .additional-editor-heading,
+  .requests-page .additional-card-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ==================================================
+   MEDICDRIVE B38.3 ADICIONALES PACIENTE
+   ================================================== */
+
+.patient-requests-page .patient-request-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.patient-requests-page .patient-original-total,
+.patient-requests-page .patient-approved-additional {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.patient-requests-page .patient-original-total {
+  color: #64748b;
+}
+
+.patient-requests-page .patient-approved-additional {
+  color: #15803d;
+}
+
+.patient-requests-page .patient-additional-toggle-button {
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 11px;
+  color: #1d4ed8;
+  background: #dbeafe;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.patient-requests-page .patient-additional-toggle-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.patient-requests-page .patient-additional-detail-row > td {
+  padding: 0 12px 22px;
+  background: #f8fafc;
+}
+
+.patient-requests-page .patient-additional-panel {
+  display: grid;
+  gap: 18px;
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.patient-requests-page .patient-additional-heading,
+.patient-requests-page .patient-additional-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.patient-requests-page .patient-additional-heading > div > span,
+.patient-requests-page .patient-additional-card-top > div > span,
+.patient-requests-page .patient-additional-justification > span,
+.patient-requests-page .patient-additional-specialist > span {
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.patient-requests-page .patient-additional-heading h4,
+.patient-requests-page .patient-additional-card-top h5 {
+  margin: 5px 0 0;
+  color: #0f172a;
+}
+
+.patient-requests-page .patient-additional-heading p {
+  margin: 7px 0 0;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.patient-requests-page .patient-additional-pending-badge {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 7px 11px;
+  color: #92400e;
+  background: #fef3c7;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.patient-requests-page .patient-additional-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.patient-requests-page .patient-additional-summary article {
+  border: 1px solid #dbe4ee;
+  border-radius: 16px;
+  padding: 15px;
+  background: #f8fafc;
+}
+
+.patient-requests-page .patient-additional-summary span,
+.patient-requests-page .patient-additional-summary strong {
+  display: block;
+}
+
+.patient-requests-page .patient-additional-summary span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.patient-requests-page .patient-additional-summary strong {
+  margin-top: 6px;
+  color: #0f172a;
+  font-size: 21px;
+}
+
+.patient-requests-page .patient-current-total-card {
+  border-color: #99f6e4 !important;
+  background: #f0fdfa !important;
+}
+
+.patient-requests-page .patient-current-total-card strong {
+  color: #0f766e;
+}
+
+.patient-requests-page .patient-additional-notice {
+  border: 1px solid #fcd34d;
+  border-radius: 14px;
+  padding: 13px 15px;
+  color: #92400e;
+  background: #fffbeb;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.patient-requests-page .patient-additional-list {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.patient-requests-page .patient-additional-card {
+  display: grid;
+  gap: 13px;
+  border: 1px solid #dbe4ee;
+  border-radius: 18px;
+  padding: 16px;
+  background: #ffffff;
+  box-shadow:
+    0 10px 25px
+    rgba(15, 23, 42, 0.06);
+}
+
+.patient-requests-page .patient-additional-status {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.patient-requests-page .patient-additional-status-pending {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.patient-requests-page .patient-additional-status-approved {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.patient-requests-page .patient-additional-status-rejected {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.patient-requests-page .patient-additional-status-withdrawn {
+  color: #475569;
+  background: #e2e8f0;
+}
+
+.patient-requests-page .patient-additional-specialist {
+  display: grid;
+  gap: 5px;
+}
+
+.patient-requests-page .patient-additional-specialist strong {
+  color: #334155;
+}
+
+.patient-requests-page .patient-additional-amount {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-radius: 12px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.patient-requests-page .patient-additional-amount span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.patient-requests-page .patient-additional-amount strong {
+  color: #1d4ed8;
+  font-size: 20px;
+}
+
+.patient-requests-page .patient-additional-justification {
+  border-left: 4px solid #2563eb;
+  border-radius: 0 12px 12px 0;
+  padding: 12px;
+  background: #eff6ff;
+}
+
+.patient-requests-page .patient-additional-justification p {
+  margin: 6px 0 0;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.patient-requests-page .patient-additional-dates {
+  display: grid;
+  gap: 5px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.patient-requests-page .patient-additional-dates b {
+  color: #334155;
+}
+
+.patient-requests-page .patient-additional-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.patient-requests-page .patient-additional-approve,
+.patient-requests-page .patient-additional-reject {
+  border: 0;
+  border-radius: 11px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.patient-requests-page .patient-additional-approve {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.patient-requests-page .patient-additional-reject {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.patient-requests-page .patient-additional-approve:disabled,
+.patient-requests-page .patient-additional-reject:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+  .patient-requests-page .patient-additional-summary,
+  .patient-requests-page .patient-additional-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .patient-requests-page .patient-additional-heading,
+  .patient-requests-page .patient-additional-card-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

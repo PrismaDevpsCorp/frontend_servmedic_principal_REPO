@@ -1026,3 +1026,196 @@ input {
     grid-template-columns: 1fr;
   }
 }
+
+/* BEGIN MEDICDRIVE ADDITIONAL APPROVAL OVERLAY HOTFIX */
+body .additional-approval-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 24px !important;
+  margin: 0 !important;
+  background: rgba(15, 23, 42, 0.52) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-sizing: border-box !important;
+}
+
+body .additional-approval-modal {
+  width: min(520px, calc(100vw - 32px)) !important;
+  max-width: 520px !important;
+  max-height: min(88vh, 720px) !important;
+  overflow: auto !important;
+  margin: 0 !important;
+  padding: 24px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  background: #ffffff !important;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.24) !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+body .additional-approval-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #13b8a6 0%, #3b82f6 100%);
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 800;
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.28);
+}
+
+body .additional-approval-heading {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+body .additional-approval-heading h3 {
+  margin: 0 0 10px 0;
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+body .additional-approval-heading p {
+  margin: 0;
+  color: #334155;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+body .additional-approval-heading strong {
+  color: #0f766e;
+  font-weight: 800;
+}
+
+body .additional-approval-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 18px 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+body .additional-approval-info-icon {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+body .additional-approval-error {
+  margin-top: 14px;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+body .additional-approval-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+body .additional-approval-actions button {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+body .additional-approval-actions button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+body .additional-approval-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+body .additional-approval-cancel {
+  min-width: 140px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 15px;
+  color: #0f766e;
+  background: #ecfeff;
+  box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.28);
+}
+
+body .additional-approval-confirm {
+  min-width: 170px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 15px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #14b8a6 0%, #3b82f6 100%);
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.24);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+body .additional-approval-button-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  body .additional-approval-backdrop {
+    padding: 16px !important;
+    align-items: flex-end !important;
+  }
+
+  body .additional-approval-modal {
+    width: 100% !important;
+    max-width: none !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    padding: 20px !important;
+  }
+
+  body .additional-approval-heading h3 {
+    font-size: 22px;
+  }
+
+  body .additional-approval-actions {
+    flex-direction: column-reverse;
+  }
+
+  body .additional-approval-cancel,
+  body .additional-approval-confirm {
+    width: 100%;
+  }
+}
+/* END MEDICDRIVE ADDITIONAL APPROVAL OVERLAY HOTFIX */

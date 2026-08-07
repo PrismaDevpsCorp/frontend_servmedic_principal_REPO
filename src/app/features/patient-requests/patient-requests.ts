@@ -30,6 +30,10 @@ interface ProposalConfirmation {
   request: MedicalRequest;
   proposal: MedicalRequestProposal;
 }
+interface AdditionalApprovalConfirmation {
+  request: MedicalRequest;
+  additional: MedicalRequestAdditional;
+}
 @Component({
   selector: 'app-patient-requests',
   imports: [
@@ -84,6 +88,10 @@ export class PatientRequests {
   additionalActionLoadingId =
     signal<number | null>(null);
 
+  additionalApprovalConfirmation =
+    signal<AdditionalApprovalConfirmation | null>(null);
+
+  additionalApprovalError = signal('');
   searchTerm = signal('');
   statusFilter = signal('ALL');
 
@@ -658,28 +666,27 @@ export class PatientRequests {
   requestApprovedAdditionalsAmount(
     requestId: number
   ): number {
-    const first =
-      this.additionalsFor(requestId)[0];
-
-    return Number(
-      first?.approvedAdditionalsAmount
-      ?? 0
-    );
+    return this.additionalsFor(requestId)
+      .filter(
+        (additional) =>
+          additional.status === 'APPROVED'
+      )
+      .reduce(
+        (total, additional) =>
+          total + Number(additional.amount),
+        0
+      );
   }
-
   requestCurrentTotal(
     request: MedicalRequest
   ): number {
-    const first =
-      this.additionalsFor(request.id)[0];
-
-    return Number(
-      first?.currentTotalAmount
-      ?? request.estimatedAmount
-      ?? 0
+    return (
+      this.requestOriginalTotal(request)
+      + this.requestApprovedAdditionalsAmount(
+        request.id
+      )
     );
   }
-
   approveAdditional(
     request: MedicalRequest,
     additional: MedicalRequestAdditional
@@ -693,18 +700,54 @@ export class PatientRequests {
       return;
     }
 
-    const confirmed = window.confirm(
-      '¿Confirma la aprobación de este cargo adicional por S/ '
-      + Number(additional.amount).toFixed(2)
-      + '?'
-    );
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.additionalApprovalError.set('');
 
-    if (!confirmed) {
+    this.additionalApprovalConfirmation.set({
+      request,
+      additional
+    });
+  }
+
+  closeAdditionalApprovalConfirmation(): void {
+    const confirmation =
+      this.additionalApprovalConfirmation();
+
+    if (
+      confirmation
+      && this.additionalActionLoadingId()
+        === confirmation.additional.additionalId
+    ) {
       return;
     }
 
-    this.errorMessage.set('');
-    this.successMessage.set('');
+    this.additionalApprovalError.set('');
+    this.additionalApprovalConfirmation.set(null);
+  }
+
+  confirmAdditionalApproval(): void {
+    const confirmation =
+      this.additionalApprovalConfirmation();
+
+    if (!confirmation) {
+      return;
+    }
+
+    const request = confirmation.request;
+    const additional = confirmation.additional;
+
+    if (
+      !this.canDecideAdditional(
+        request,
+        additional
+      )
+    ) {
+      this.additionalApprovalConfirmation.set(null);
+      return;
+    }
+
+    this.additionalApprovalError.set('');
 
     this.additionalActionLoadingId.set(
       additional.additionalId
@@ -716,23 +759,23 @@ export class PatientRequests {
         additional.additionalId
       )
       .pipe(
-        finalize(
-          () =>
-            this.additionalActionLoadingId.set(
-              null
-            )
-        )
+        finalize(() => {
+          this.additionalActionLoadingId.set(null);
+        })
       )
       .subscribe({
         next: (updated) => {
           this.upsertAdditional(updated);
 
+          this.additionalApprovalConfirmation.set(null);
+
           this.successMessage.set(
             'Cargo adicional aprobado correctamente.'
           );
         },
-        error: (error: unknown) => {
-          this.errorMessage.set(
+
+        error: (error) => {
+          this.additionalApprovalError.set(
             this.extractErrorMessage(
               error,
               'No se pudo aprobar el cargo adicional.'
@@ -741,7 +784,6 @@ export class PatientRequests {
         }
       });
   }
-
   rejectAdditional(
     request: MedicalRequest,
     additional: MedicalRequestAdditional

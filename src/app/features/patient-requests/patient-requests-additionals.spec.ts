@@ -266,6 +266,8 @@ describe(
           pending
         );
 
+        component.confirmAdditionalApproval();
+
         expect(
           approveCalls
         ).toEqual([
@@ -399,6 +401,53 @@ describe(
 
         expect(
           rejectCalls
+        ).toEqual([]);
+      }
+    );
+
+    it(
+      'abre el modal amigable antes de ejecutar la aprobacion',
+      () => {
+        const fixture =
+          TestBed.createComponent(
+            PatientRequests
+          );
+
+        const component =
+          fixture.componentInstance;
+
+        component.additionalsByRequestId.set({
+          16: [pending]
+        });
+
+        component.approveAdditional(
+          request,
+          pending
+        );
+
+        expect(
+          approveCalls
+        ).toEqual([]);
+
+        expect(
+          component.additionalApprovalConfirmation()
+        ).not.toBeNull();
+
+        expect(
+          component.additionalApprovalConfirmation()
+            ?.additional.additionalId
+        ).toBe(
+          pending.additionalId
+        );
+
+        component.closeAdditionalApprovalConfirmation();
+
+        expect(
+          component.additionalApprovalConfirmation()
+        ).toBeNull();
+
+        expect(
+          approveCalls
         ).toEqual([]);
       }
     );

@@ -869,3 +869,160 @@ input {
     align-items: stretch;
   }
 }
+/* MEDICDRIVE B38.3 MODAL APROBACION ADICIONAL */
+
+.patient-requests-page .additional-approval-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(2px);
+}
+
+.patient-requests-page .additional-approval-modal {
+  width: min(100%, 470px);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  border-radius: 24px;
+  padding: 28px 30px 30px;
+  background: #fff;
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.22);
+}
+
+.patient-requests-page .additional-approval-icon {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: #dcfdf7;
+}
+
+.patient-requests-page .additional-approval-icon span {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  border: 3px solid #18b89b;
+  border-radius: 50%;
+  color: #169b86;
+  font-size: 27px;
+  font-weight: 900;
+}
+
+.patient-requests-page .additional-approval-heading {
+  text-align: center;
+}
+
+.patient-requests-page .additional-approval-heading h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 23px;
+  font-weight: 900;
+}
+
+.patient-requests-page .additional-approval-heading p {
+  margin: 14px 0 0;
+  color: #475569;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.patient-requests-page .additional-approval-heading strong {
+  color: #0f8f7c;
+}
+
+.patient-requests-page .additional-approval-info {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 22px;
+  border: 1px solid #b7f0e6;
+  border-radius: 11px;
+  padding: 12px 14px;
+  color: #334155;
+  background: #effcf9;
+}
+
+.patient-requests-page .additional-approval-info-icon {
+  display: grid;
+  flex: 0 0 20px;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: #fff;
+  background: #219f8a;
+  font-weight: 900;
+}
+
+.patient-requests-page .additional-approval-error {
+  margin-top: 14px;
+  border: 1px solid #fecaca;
+  border-radius: 11px;
+  padding: 11px 13px;
+  color: #991b1b;
+  background: #fef2f2;
+}
+
+.patient-requests-page .additional-approval-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 13px;
+  margin-top: 22px;
+}
+
+.patient-requests-page .additional-approval-cancel,
+.patient-requests-page .additional-approval-confirm {
+  min-height: 48px;
+  border-radius: 999px;
+  padding: 11px 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.patient-requests-page .additional-approval-cancel {
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  background: #fff;
+}
+
+.patient-requests-page .additional-approval-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  color: #fff;
+  background: linear-gradient(135deg, #168d7e, #25ad91);
+  box-shadow: 0 10px 22px rgba(22, 141, 126, 0.22);
+}
+
+.patient-requests-page .additional-approval-button-icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: #168d7e;
+  background: #fff;
+}
+
+.patient-requests-page .additional-approval-confirm:disabled,
+.patient-requests-page .additional-approval-cancel:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .patient-requests-page .additional-approval-modal {
+    padding: 24px 20px;
+  }
+
+  .patient-requests-page .additional-approval-actions {
+    grid-template-columns: 1fr;
+  }
+}

@@ -862,6 +862,95 @@
           }}
         </button>
       </div>
-    </section>
+      @if (
+    additionalApprovalConfirmation();
+    as confirmation
+  ) {
+    <div
+      class="additional-approval-backdrop"
+      (click)="closeAdditionalApprovalConfirmation()">
+
+      <div
+        class="additional-approval-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="additional-approval-title"
+        (click)="$event.stopPropagation()">
+
+        <div class="additional-approval-icon">
+          <span>✓</span>
+        </div>
+
+        <div class="additional-approval-heading">
+          <h3 id="additional-approval-title">
+            Confirmar aprobación
+          </h3>
+
+          <p>
+            ¿Deseas aprobar este cargo adicional por
+            <strong>
+              S/
+              {{
+                confirmation.additional.amount
+                  | number:'1.2-2'
+              }}
+            </strong>?
+          </p>
+        </div>
+
+        <div class="additional-approval-info">
+          <span class="additional-approval-info-icon">
+            i
+          </span>
+
+          <span>
+            Este monto se sumará al total vigente
+            de la atención.
+          </span>
+        </div>
+
+        @if (additionalApprovalError()) {
+          <div class="additional-approval-error">
+            {{ additionalApprovalError() }}
+          </div>
+        }
+
+        <div class="additional-approval-actions">
+          <button
+            type="button"
+            class="additional-approval-cancel"
+            (click)="closeAdditionalApprovalConfirmation()"
+            [disabled]="
+              additionalActionLoadingId()
+              === confirmation.additional.additionalId
+            ">
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            class="additional-approval-confirm"
+            (click)="confirmAdditionalApproval()"
+            [disabled]="
+              additionalActionLoadingId()
+              === confirmation.additional.additionalId
+            ">
+
+            <span class="additional-approval-button-icon">
+              ✓
+            </span>
+
+            {{
+              additionalActionLoadingId()
+              === confirmation.additional.additionalId
+                ? 'Aprobando...'
+                : 'Aprobar cargo'
+            }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</section>
   </div>
 }

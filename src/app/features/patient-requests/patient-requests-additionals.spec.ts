@@ -178,14 +178,6 @@ describe(
         ]
       });
 
-      TestBed.overrideComponent(
-        PatientRequests,
-        {
-          set: {
-            template: ''
-          }
-        }
-      );
 
       await TestBed.compileComponents();
     });
@@ -432,6 +424,26 @@ describe(
         expect(
           component.additionalApprovalConfirmation()
         ).not.toBeNull();
+        fixture.detectChanges();
+
+        const modal =
+          fixture.nativeElement.querySelector(
+            '.additional-approval-modal'
+          ) as HTMLElement | null;
+
+        expect(modal).not.toBeNull();
+
+        expect(
+          modal?.textContent
+        ).toContain(
+          'Confirmar aprobación'
+        );
+
+        expect(
+          modal?.textContent
+        ).toContain(
+          'Aprobar cargo'
+        );
 
         expect(
           component.additionalApprovalConfirmation()

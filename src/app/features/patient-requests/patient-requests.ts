@@ -138,6 +138,20 @@ export class PatientRequests {
           this.requests.set(items);
           this.loading.set(false);
 
+          items
+            .filter(
+              (item) =>
+                this.supportsAdditionals(
+                  item
+                )
+            )
+            .forEach(
+              (item) =>
+                this.loadAdditionalList(
+                  item.id
+                )
+            );
+
           const expanded =
             this.expandedRequestId();
 

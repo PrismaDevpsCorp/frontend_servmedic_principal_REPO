@@ -84,6 +84,24 @@ describe(
           '2026-08-06T19:10:00-05:00'
       };
 
+    const approvedSecond:
+      MedicalRequestAdditional = {
+        ...approved,
+        additionalId: 2,
+        amount: 14.75,
+        approvedAdditionalsAmount: 40.25,
+        currentTotalAmount: 145.25
+      };
+
+    const approvedThird:
+      MedicalRequestAdditional = {
+        ...approved,
+        additionalId: 3,
+        amount: 9.9,
+        approvedAdditionalsAmount: 50.15,
+        currentTotalAmount: 155.15
+      };
+
     const rejected:
       MedicalRequestAdditional = {
         ...pending,
@@ -93,6 +111,9 @@ describe(
         respondedAt:
           '2026-08-06T19:11:00-05:00'
       };
+
+    let requestListResult:
+      MedicalRequest[];
 
     let listCalls: number[];
     let approveCalls: Array<{
@@ -105,6 +126,8 @@ describe(
     }>;
 
     beforeEach(async () => {
+      requestListResult = [];
+
       listCalls = [];
       approveCalls = [];
       rejectCalls = [];
@@ -119,7 +142,7 @@ describe(
               PatientMedicalRequestService,
             useValue: {
               list: () =>
-                of<MedicalRequest[]>([]),
+                of(requestListResult),
               findById: () =>
                 of(request),
               create: () =>
@@ -234,6 +257,43 @@ describe(
     );
 
     it(
+      'precarga adicionales para calcular totales sin abrir el detalle',
+      () => {
+        requestListResult = [
+          request
+        ];
+
+        const fixture =
+          TestBed.createComponent(
+            PatientRequests
+          );
+
+        const component =
+          fixture.componentInstance;
+
+        expect(listCalls).toEqual([
+          16
+        ]);
+
+        expect(
+          component.expandedAdditionalRequestId()
+        ).toBeNull();
+
+        expect(
+          component.requestOriginalTotal(
+            request
+          )
+        ).toBe(105);
+
+        expect(
+          component.pendingAdditionalsCount(
+            16
+          )
+        ).toBe(1);
+      }
+    );
+
+    it(
       'aprueba un adicional y actualiza el total vigente',
       () => {
         vi.spyOn(
@@ -291,6 +351,45 @@ describe(
             16
           )
         ).toBe(false);
+      }
+    );
+
+    it(
+      'suma correctamente multiples cargos aprobados',
+      () => {
+        const fixture =
+          TestBed.createComponent(
+            PatientRequests
+          );
+
+        const component =
+          fixture.componentInstance;
+
+        component.additionalsByRequestId.set({
+          16: [
+            approved,
+            approvedSecond,
+            approvedThird
+          ]
+        });
+
+        expect(
+          component.requestApprovedAdditionalsAmount(
+            16
+          )
+        ).toBeCloseTo(
+          50.15,
+          2
+        );
+
+        expect(
+          component.requestCurrentTotal(
+            request
+          )
+        ).toBeCloseTo(
+          155.15,
+          2
+        );
       }
     );
 

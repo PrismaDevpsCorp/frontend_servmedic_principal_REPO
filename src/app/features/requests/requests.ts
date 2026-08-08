@@ -1514,19 +1514,29 @@ export class Requests {
   finishWithAdditionalGuard(
     request: MedicalRequest
   ): void {
-    if (
-      this.hasPendingAdditionals(
-        request.id
-      )
-    ) {
-      this.errorMessage.set(
-        'No se puede finalizar mientras exista un cargo adicional pendiente.'
-      );
+    this.errorMessage.set('');
+    this.successMessage.set('');
 
-      return;
-    }
+    this.loadAdditionalList(
+      request.id,
+      true,
+      (items) => {
+        if (
+          items.some(
+            (additional) =>
+              additional.status === 'PENDING'
+          )
+        ) {
+          this.errorMessage.set(
+            'No se puede finalizar mientras exista un cargo adicional pendiente.'
+          );
 
-    this.finish(request);
+          return;
+        }
+
+        this.finish(request);
+      }
+    );
   }
 
   additionalStatusLabel(
@@ -1553,7 +1563,10 @@ export class Requests {
 
   private loadAdditionalList(
     requestId: number,
-    force = false
+    force = false,
+    afterLoad?: (
+      items: MedicalRequestAdditional[]
+    ) => void
   ): void {
     if (
       !force
@@ -1599,6 +1612,8 @@ export class Requests {
             ...this.loadedAdditionalRequestIds(),
             [requestId]: true
           });
+
+          afterLoad?.(sorted);
         },
         error: (error: unknown) => {
           this.additionalsByRequestId.set({

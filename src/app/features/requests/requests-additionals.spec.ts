@@ -76,6 +76,9 @@ describe(
         withdrawnAt: null
       };
 
+    let listedAdditionals:
+      MedicalRequestAdditional[];
+
     let listCalls: number[];
     let createCalls: Array<{
       requestId: number;
@@ -92,6 +95,10 @@ describe(
     let finishCalls: number[];
 
     beforeEach(async () => {
+      listedAdditionals = [
+        pendingAdditional
+      ];
+
       listCalls = [];
       createCalls = [];
       withdrawCalls = [];
@@ -160,7 +167,7 @@ describe(
             useValue: {
               list: (requestId: number) => {
                 listCalls.push(requestId);
-                return of([pendingAdditional]);
+                return of(listedAdditionals);
               },
 
               create: (
@@ -321,7 +328,7 @@ describe(
     );
 
     it(
-      'bloquea finalizar con pendiente y permite finalizar sin pendiente',
+      'consulta adicionales frescos antes de finalizar',
       () => {
         const fixture =
           TestBed.createComponent(Requests);
@@ -330,13 +337,14 @@ describe(
           fixture.componentInstance;
 
         component.additionalsByRequestId.set({
-          16: [pendingAdditional]
+          16: []
         });
 
         component.finishWithAdditionalGuard(
           request
         );
 
+        expect(listCalls).toEqual([16]);
         expect(finishCalls).toEqual([]);
 
         expect(
@@ -345,9 +353,11 @@ describe(
           'cargo adicional pendiente'
         );
 
-        component.additionalsByRequestId.set({
-          16: []
-        });
+        expect(
+          component.hasPendingAdditionals(16)
+        ).toBe(true);
+
+        listedAdditionals = [];
 
         component.errorMessage.set('');
 
@@ -355,7 +365,16 @@ describe(
           request
         );
 
+        expect(listCalls).toEqual([
+          16,
+          16
+        ]);
+
         expect(finishCalls).toEqual([16]);
+
+        expect(
+          component.hasPendingAdditionals(16)
+        ).toBe(false);
       }
     );
   }

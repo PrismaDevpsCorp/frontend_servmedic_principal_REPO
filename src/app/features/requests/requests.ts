@@ -1527,6 +1527,10 @@ export class Requests {
               additional.status === 'PENDING'
           )
         ) {
+          this.expandedAdditionalRequestId.set(
+            request.id
+          );
+
           this.errorMessage.set(
             'No se puede finalizar mientras exista un cargo adicional pendiente.'
           );

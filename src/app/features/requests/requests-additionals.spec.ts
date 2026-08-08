@@ -354,6 +354,10 @@ describe(
         );
 
         expect(
+          component.expandedAdditionalRequestId()
+        ).toBe(16);
+
+        expect(
           component.hasPendingAdditionals(16)
         ).toBe(true);
 

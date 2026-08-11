@@ -40,6 +40,7 @@ import {
   RequestLocationMap,
   SpecialistMapLocation
 } from './request-location-map/request-location-map';
+import { AdditionalWithdrawModal } from './additional-withdraw-modal/additional-withdraw-modal';
 
 type ReportCompletionStatus =
   | 'LOADING'
@@ -61,7 +62,8 @@ interface ProposalPriceSummary {
     DatePipe,
     RouterLink,
     FormsModule,
-    RequestLocationMap
+    RequestLocationMap,
+    AdditionalWithdrawModal
   ],
   templateUrl: './requests.html',
   styleUrl: './requests.scss'
@@ -1451,7 +1453,12 @@ export class Requests {
       });
   }
 
-  withdrawAdditional(
+  readonly withdrawAdditionalConfirmation = signal<{
+    request: MedicalRequest;
+    additional: MedicalRequestAdditional;
+  } | null>(null);
+
+  openWithdrawAdditionalConfirmation(
     request: MedicalRequest,
     additional: MedicalRequestAdditional
   ): void {
@@ -1464,11 +1471,54 @@ export class Requests {
       return;
     }
 
-    const confirmed = window.confirm(
-      '¿Desea retirar este cargo adicional pendiente?'
-    );
+    this.errorMessage.set('');
+    this.successMessage.set('');
 
-    if (!confirmed) {
+    this.withdrawAdditionalConfirmation.set({
+      request,
+      additional
+    });
+  }
+
+  closeWithdrawAdditionalConfirmation(): void {
+    const confirmation =
+      this.withdrawAdditionalConfirmation();
+
+    if (
+      confirmation
+      && this.additionalActionLoadingId()
+        === confirmation.request.id
+    ) {
+      return;
+    }
+
+    this.withdrawAdditionalConfirmation.set(null);
+  }
+
+  confirmWithdrawAdditional(): void {
+    const confirmation =
+      this.withdrawAdditionalConfirmation();
+
+    if (!confirmation) {
+      return;
+    }
+
+    this.withdrawAdditional(
+      confirmation.request,
+      confirmation.additional
+    );
+  }
+
+  withdrawAdditional(
+    request: MedicalRequest,
+    additional: MedicalRequestAdditional
+  ): void {
+    if (
+      !this.canWithdrawAdditional(
+        request,
+        additional
+      )
+    ) {
       return;
     }
 
@@ -1495,6 +1545,10 @@ export class Requests {
       .subscribe({
         next: (updated) => {
           this.upsertAdditional(updated);
+
+          this.withdrawAdditionalConfirmation.set(
+            null
+          );
 
           this.successMessage.set(
             'El cargo adicional fue retirado correctamente.'

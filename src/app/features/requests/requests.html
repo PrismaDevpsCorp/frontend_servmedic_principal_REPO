@@ -931,7 +931,7 @@
                                   type="button"
                                   class="additional-withdraw-button"
                                   (click)="
-                                    withdrawAdditional(
+                                    openWithdrawAdditionalConfirmation(
                                       request,
                                       additional
                                     )
@@ -963,3 +963,22 @@
     }
   </div>
 </section>
+@if (
+  withdrawAdditionalConfirmation();
+  as confirmation
+) {
+  <app-additional-withdraw-modal
+    [additional]="confirmation.additional"
+    [loading]="
+      additionalActionLoadingId()
+      === confirmation.request.id
+    "
+    [errorMessage]="errorMessage()"
+    (cancelled)="
+      closeWithdrawAdditionalConfirmation()
+    "
+    (confirmed)="
+      confirmWithdrawAdditional()
+    ">
+  </app-additional-withdraw-modal>
+}

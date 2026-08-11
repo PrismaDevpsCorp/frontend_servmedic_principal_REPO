@@ -1,0 +1,106 @@
+<div
+  class="withdraw-backdrop"
+  (click)="requestCancel()">
+
+  <section
+    class="withdraw-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="withdraw-modal-title"
+    aria-describedby="withdraw-modal-description"
+    (click)="$event.stopPropagation()">
+
+    <button
+      type="button"
+      class="withdraw-close"
+      aria-label="Cerrar confirmación"
+      (click)="requestCancel()"
+      [disabled]="loading">
+      &times;
+    </button>
+
+    <div
+      class="withdraw-icon"
+      aria-hidden="true">
+      !
+    </div>
+
+    <header class="withdraw-heading">
+      <span class="withdraw-eyebrow">
+        Cargo adicional
+      </span>
+
+      <h2 id="withdraw-modal-title">
+        Confirmar retiro
+      </h2>
+
+      <p id="withdraw-modal-description">
+        Estás a punto de retirar un cargo adicional
+        que todavía está pendiente de decisión.
+      </p>
+    </header>
+
+    <div class="withdraw-summary">
+      <div class="withdraw-concept">
+        <span>Concepto</span>
+
+        <strong>
+          {{ additional.concept }}
+        </strong>
+      </div>
+
+      <div class="withdraw-amount">
+        <span>Importe</span>
+
+        <strong>
+          S/ {{ additional.amount | number:'1.2-2' }}
+        </strong>
+      </div>
+    </div>
+
+    <div class="withdraw-warning">
+      <span
+        class="withdraw-warning-icon"
+        aria-hidden="true">
+        i
+      </span>
+
+      <p>
+        Al retirarlo, el paciente ya no tendrá que
+        aprobarlo o rechazarlo y este importe no se
+        sumará al total vigente.
+      </p>
+    </div>
+
+    @if (errorMessage) {
+      <div
+        class="withdraw-error"
+        role="alert">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <div class="withdraw-actions">
+      <button
+        type="button"
+        class="withdraw-cancel"
+        (click)="requestCancel()"
+        [disabled]="loading">
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="withdraw-confirm"
+        (click)="requestConfirm()"
+        [disabled]="loading">
+
+        {{
+          loading
+            ? 'Retirando...'
+            : 'Confirmar retiro'
+        }}
+      </button>
+    </div>
+  </section>
+</div>

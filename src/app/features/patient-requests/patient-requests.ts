@@ -26,6 +26,10 @@ import {
   PatientMedicalRequestService
 } from '../../core/services/patient-medical-request.service';
 
+import {
+  PatientManualPaymentComponent
+} from './patient-manual-payment/patient-manual-payment';
+
 interface ProposalConfirmation {
   request: MedicalRequest;
   proposal: MedicalRequestProposal;
@@ -39,7 +43,8 @@ interface AdditionalApprovalConfirmation {
   imports: [
     CommonModule,
     DatePipe,
-    FormsModule
+    FormsModule,
+    PatientManualPaymentComponent
   ],
   templateUrl: './patient-requests.html',
   styleUrl: './patient-requests.scss'

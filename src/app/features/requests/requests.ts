@@ -42,6 +42,10 @@ import {
 } from './request-location-map/request-location-map';
 import { AdditionalWithdrawModal } from './additional-withdraw-modal/additional-withdraw-modal';
 
+import {
+  SpecialistManualPaymentComponent
+} from './specialist-manual-payment/specialist-manual-payment';
+
 type ReportCompletionStatus =
   | 'LOADING'
   | 'PENDING'
@@ -63,7 +67,8 @@ interface ProposalPriceSummary {
     RouterLink,
     FormsModule,
     RequestLocationMap,
-    AdditionalWithdrawModal
+    AdditionalWithdrawModal,
+    SpecialistManualPaymentComponent
   ],
   templateUrl: './requests.html',
   styleUrl: './requests.scss'

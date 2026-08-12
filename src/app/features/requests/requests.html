@@ -623,6 +623,20 @@
               </tr>
 
               @if (
+                request.status === 'FINALIZADO'
+              ) {
+                <tr class="specialist-payment-detail-row">
+                  <td colspan="7">
+
+                    <app-specialist-manual-payment
+                      [requestId]="request.id">
+                    </app-specialist-manual-payment>
+
+                  </td>
+                </tr>
+              }
+
+              @if (
                 expandedAdditionalRequestId()
                 === request.id
               ) {

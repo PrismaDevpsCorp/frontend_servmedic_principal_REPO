@@ -255,6 +255,25 @@
               </tr>
 
               @if (
+                request.status === 'FINALIZADO'
+              ) {
+                <tr class="patient-payment-detail-row">
+                  <td colspan="7">
+
+                    <app-patient-manual-payment
+                      [requestId]="request.id"
+                      [expectedTotal]="requestCurrentTotal(request)"
+                      [specialistName]="
+                        request.acceptedSpecialistFullName
+                        || ''
+                      ">
+                    </app-patient-manual-payment>
+
+                  </td>
+                </tr>
+              }
+
+              @if (
                 expandedRequestId() === request.id
               ) {
                 <tr class="proposal-detail-row">

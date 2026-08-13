@@ -129,6 +129,9 @@ export class Requests {
   proposalEditorRequestId =
     signal<number | null>(null);
 
+  expandedPaymentRequestId =
+    signal<number | null>(null);
+
   statusFilter = signal('ALL');
   searchTerm = signal('');
 
@@ -816,7 +819,8 @@ export class Requests {
       () =>
         this.requestService.finish(
           request.id
-        )
+        ),
+      'Servicio finalizado correctamente.'
     );
   }
 
@@ -832,10 +836,37 @@ export class Requests {
     return request.status === 'EN_CAMINO';
   }
 
+
+  isReportComplete(
+    requestId: number
+  ): boolean {
+    return (
+      this.reportStatusByRequestId()[
+        requestId
+      ] === 'COMPLETE'
+    );
+  }
+
   canFinish(
     request: MedicalRequest
   ): boolean {
-    return request.status === 'EN_ATENCION';
+    return (
+      request.status === 'EN_ATENCION'
+      && this.isReportComplete(
+        request.id
+      )
+    );
+  }
+
+  togglePaymentDetails(
+    requestId: number
+  ): void {
+    this.expandedPaymentRequestId.set(
+      this.expandedPaymentRequestId()
+        === requestId
+        ? null
+        : requestId
+    );
   }
 
   statusLabel(status: string): string {
@@ -910,7 +941,8 @@ export class Requests {
 
   private runAction(
     requestId: number,
-    action: () => Observable<MedicalRequest>
+    action: () => Observable<MedicalRequest>,
+    successMessage?: string
   ): void {
     this.actionLoadingId.set(requestId);
     this.errorMessage.set('');
@@ -924,7 +956,15 @@ export class Requests {
         )
       )
       .subscribe({
-        next: () => this.loadRequests(),
+        next: () => {
+          if (successMessage) {
+            this.successMessage.set(
+              successMessage
+            );
+          }
+
+          this.loadRequests();
+        },
         error: (error: unknown) => {
           this.errorMessage.set(
             this.extractErrorMessage(
@@ -976,16 +1016,18 @@ export class Requests {
     );
   }
 
+
   private loadAttentionReportStatuses(
     requests: MedicalRequest[]
   ): void {
-    const finalized = requests.filter(
+    const relevant = requests.filter(
       (request) =>
-        request.status === 'FINALIZADO'
+        request.status === 'EN_ATENCION'
+        || request.status === 'FINALIZADO'
     );
 
     const loadingStatuses =
-      finalized.reduce<
+      relevant.reduce<
         Record<number, ReportCompletionStatus>
       >(
         (statuses, request) => {
@@ -999,11 +1041,11 @@ export class Requests {
       loadingStatuses
     );
 
-    if (finalized.length === 0) {
+    if (relevant.length === 0) {
       return;
     }
 
-    const checks = finalized.map(
+    const checks = relevant.map(
       (request) =>
         this.attentionReportService
           .findByMedicalRequestId(request.id)
@@ -1014,6 +1056,8 @@ export class Requests {
                 && !!report.clinicalObservations
                   ?.trim()
                 && !!report.recommendations
+                  ?.trim()
+                && !!report.indications
                   ?.trim();
 
               return {
@@ -1029,7 +1073,7 @@ export class Requests {
               () =>
                 of({
                   requestId: request.id,
-                  status: 'ERROR' as ReportCompletionStatus
+                  status: 'PENDING' as ReportCompletionStatus
                 })
             )
           )
@@ -1570,11 +1614,19 @@ export class Requests {
       });
   }
 
+
   finishWithAdditionalGuard(
     request: MedicalRequest
   ): void {
     this.errorMessage.set('');
     this.successMessage.set('');
+
+    if (!this.isReportComplete(request.id)) {
+      this.errorMessage.set(
+        'DEBE INGRESAR DATOS EN LA FICHA DE ATENCION antes de finalizar el servicio.'
+      );
+      return;
+    }
 
     this.loadAdditionalList(
       request.id,

@@ -38,6 +38,11 @@ interface AdditionalApprovalConfirmation {
   request: MedicalRequest;
   additional: MedicalRequestAdditional;
 }
+
+interface AdditionalRejectionConfirmation {
+  request: MedicalRequest;
+  additional: MedicalRequestAdditional;
+}
 @Component({
   selector: 'app-patient-requests',
   imports: [
@@ -97,6 +102,11 @@ export class PatientRequests {
     signal<AdditionalApprovalConfirmation | null>(null);
 
   additionalApprovalError = signal('');
+
+  additionalRejectionConfirmation =
+    signal<AdditionalRejectionConfirmation | null>(null);
+
+  additionalRejectionError = signal('');
   searchTerm = signal('');
   statusFilter = signal('ALL');
 
@@ -803,6 +813,7 @@ export class PatientRequests {
         }
       });
   }
+
   rejectAdditional(
     request: MedicalRequest,
     additional: MedicalRequestAdditional
@@ -816,16 +827,54 @@ export class PatientRequests {
       return;
     }
 
-    const confirmed = window.confirm(
-      '¿Confirma que desea rechazar este cargo adicional?'
-    );
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.additionalRejectionError.set('');
 
-    if (!confirmed) {
+    this.additionalRejectionConfirmation.set({
+      request,
+      additional
+    });
+  }
+
+  closeAdditionalRejectionConfirmation(): void {
+    const confirmation =
+      this.additionalRejectionConfirmation();
+
+    if (
+      confirmation
+      && this.additionalActionLoadingId()
+        === confirmation.additional.additionalId
+    ) {
       return;
     }
 
-    this.errorMessage.set('');
-    this.successMessage.set('');
+    this.additionalRejectionError.set('');
+    this.additionalRejectionConfirmation.set(null);
+  }
+
+  confirmAdditionalRejection(): void {
+    const confirmation =
+      this.additionalRejectionConfirmation();
+
+    if (!confirmation) {
+      return;
+    }
+
+    const request = confirmation.request;
+    const additional = confirmation.additional;
+
+    if (
+      !this.canDecideAdditional(
+        request,
+        additional
+      )
+    ) {
+      this.additionalRejectionConfirmation.set(null);
+      return;
+    }
+
+    this.additionalRejectionError.set('');
 
     this.additionalActionLoadingId.set(
       additional.additionalId
@@ -848,12 +897,14 @@ export class PatientRequests {
         next: (updated) => {
           this.upsertAdditional(updated);
 
+          this.additionalRejectionConfirmation.set(null);
+
           this.successMessage.set(
             'Cargo adicional rechazado correctamente.'
           );
         },
         error: (error: unknown) => {
-          this.errorMessage.set(
+          this.additionalRejectionError.set(
             this.extractErrorMessage(
               error,
               'No se pudo rechazar el cargo adicional.'

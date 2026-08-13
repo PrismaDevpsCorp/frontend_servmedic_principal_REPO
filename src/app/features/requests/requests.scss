@@ -628,3 +628,36 @@ td small {
     grid-template-columns: 1fr;
   }
 }
+/* B38_4_CORE_CORRECTIONS */
+.finish-disabled-action {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 15px;
+  background: #e7ebef;
+  color: #8793a0;
+  font-weight: 800;
+  cursor: not-allowed;
+}
+
+.attention-report-required {
+  display: inline-block;
+  max-width: 260px;
+  color: #a34632;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.payment-details-toggle {
+  border: 1px solid #b7d6df;
+  border-radius: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  background: #eef9f8;
+  color: #14645f;
+  font-weight: 800;
+}
+
+.payment-details-toggle:hover {
+  background: #ddf3f0;
+}

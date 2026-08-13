@@ -881,6 +881,94 @@
           }}
         </button>
       </div>
+
+  @if (additionalRejectionConfirmation(); as confirmation) {
+    <div class="additional-rejection-backdrop">
+      <div
+        class="additional-rejection-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="additional-rejection-title">
+
+        <p class="modal-eyebrow">
+          Confirmacion requerida
+        </p>
+
+        <h3 id="additional-rejection-title">
+          Rechazar cargo adicional
+        </h3>
+
+        <p>
+          Esta a punto de rechazar el siguiente cargo solicitado
+          por el especialista.
+        </p>
+
+        <div class="additional-rejection-summary">
+          <span>Concepto</span>
+          <strong>
+            {{ confirmation.additional.concept }}
+          </strong>
+
+          <span>Monto</span>
+          <strong>
+            S/
+            {{
+              confirmation.additional.amount
+                | number:'1.2-2'
+            }}
+          </strong>
+
+          @if (confirmation.additional.justification) {
+            <span>Justificacion</span>
+            <strong>
+              {{ confirmation.additional.justification }}
+            </strong>
+          }
+        </div>
+
+        <div class="additional-rejection-warning">
+          Al confirmar, el cargo quedara registrado como rechazado
+          y no sera incorporado al total de la atencion.
+        </div>
+
+        @if (additionalRejectionError()) {
+          <div class="error-message">
+            {{ additionalRejectionError() }}
+          </div>
+        }
+
+        <div class="additional-rejection-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            (click)="closeAdditionalRejectionConfirmation()"
+            [disabled]="
+              additionalActionLoadingId()
+              === confirmation.additional.additionalId
+            ">
+            Cancelar
+          </button>
+
+          <button
+            type="button"
+            class="danger-action"
+            (click)="confirmAdditionalRejection()"
+            [disabled]="
+              additionalActionLoadingId()
+              === confirmation.additional.additionalId
+            ">
+            {{
+              additionalActionLoadingId()
+              === confirmation.additional.additionalId
+                ? 'Procesando...'
+                : 'Confirmar rechazo'
+            }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
 </section>
   </div>
 }

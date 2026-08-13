@@ -29,7 +29,7 @@ export class AttentionReportComponent {
     clinicalObservations: ['', [Validators.required]],
     diagnosticImpression: [''],
     recommendations: ['', [Validators.required]],
-    indications: [''],
+    indications: ['', [Validators.required]],
     vitalSigns: [''],
     attachmentUrl: ['']
   });
@@ -86,7 +86,7 @@ export class AttentionReportComponent {
   saveReport(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.errorMessage.set('Complete los campos obligatorios.');
+      this.errorMessage.set('DEBE INGRESAR DATOS EN LA FICHA DE ATENCION. Observaciones clinicas, recomendaciones e indicaciones son obligatorias.');
       return;
     }
 
@@ -97,10 +97,10 @@ export class AttentionReportComponent {
     const value = this.form.getRawValue();
 
     this.attentionReportService.save(this.requestId, {
-      clinicalObservations: value.clinicalObservations,
+      clinicalObservations: value.clinicalObservations.trim(),
       diagnosticImpression: value.diagnosticImpression || null,
-      recommendations: value.recommendations,
-      indications: value.indications || null,
+      recommendations: value.recommendations.trim(),
+      indications: value.indications.trim(),
       vitalSigns: value.vitalSigns || null,
       attachmentUrl: value.attachmentUrl || null
     }).subscribe({

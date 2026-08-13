@@ -93,12 +93,16 @@
     </label>
 
     <label>
-      Indicaciones
+      Indicaciones *
       <textarea
         rows="4"
         formControlName="indications"
         placeholder="Ingrese indicaciones adicionales."
       ></textarea>
+
+      @if (hasError('indications')) {
+        <small>Las indicaciones son obligatorias.</small>
+      }
     </label>
 
     <label>

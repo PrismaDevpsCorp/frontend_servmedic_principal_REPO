@@ -5,10 +5,11 @@ import { Router, RouterLink } from '@angular/router';
 import { MedicalServiceOption } from '../../core/models/medical-service.model';
 import { CatalogService } from '../../core/services/catalog.service';
 import { PatientMedicalRequestService } from '../../core/services/patient-medical-request.service';
+import { PatientMapLocation, PatientRequestLocationMap } from './patient-request-location-map/patient-request-location-map';
 
 @Component({
   selector: 'app-patient-create-request',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, PatientRequestLocationMap],
   templateUrl: './patient-create-request.html',
   styleUrl: './patient-create-request.scss'
 })
@@ -26,8 +27,8 @@ export class PatientCreateRequest {
   serviceCode = '';
   addressText = '';
   addressReference = '';
-  latitude: number | null = -12.0464;
-  longitude: number | null = -77.0428;
+  latitude: number | null = null;
+  longitude: number | null = null;
   prescriptionImageUrl = '';
   patientNotes = '';
 
@@ -60,28 +61,19 @@ export class PatientCreateRequest {
     });
   }
 
-  useBrowserLocation(): void {
-    this.errorMessage.set('');
 
-    if (!navigator.geolocation) {
-      this.errorMessage.set('El navegador no permite obtener ubicacion.');
-      return;
+  applyMapLocation(
+    location: PatientMapLocation
+  ): void {
+    this.latitude = location.latitude;
+    this.longitude = location.longitude;
+
+    if (location.addressText?.trim()) {
+      this.addressText =
+        location.addressText.trim();
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        this.latitude = Number(position.coords.latitude.toFixed(7));
-        this.longitude = Number(position.coords.longitude.toFixed(7));
-      },
-      () => {
-        this.errorMessage.set('No se pudo obtener la ubicacion. Puede ingresar las coordenadas manualmente.');
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
-    );
+    this.errorMessage.set('');
   }
 
   createRequest(): void {
@@ -99,7 +91,7 @@ export class PatientCreateRequest {
     }
 
     if (this.latitude === null || this.longitude === null) {
-      this.errorMessage.set('Ingrese latitud y longitud.');
+      this.errorMessage.set('Seleccione la ubicacion de atencion en el mapa.');
       return;
     }
 

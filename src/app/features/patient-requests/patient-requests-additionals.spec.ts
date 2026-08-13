@@ -396,11 +396,6 @@ describe(
     it(
       'rechaza un adicional sin alterar el total original',
       () => {
-        vi.spyOn(
-          window,
-          'confirm'
-        ).mockReturnValue(true);
-
         const fixture =
           TestBed.createComponent(
             PatientRequests
@@ -420,12 +415,29 @@ describe(
 
         expect(
           rejectCalls
+        ).toEqual([]);
+
+        expect(
+          component
+            .additionalRejectionConfirmation()
+        ).not.toBeNull();
+
+        component
+          .confirmAdditionalRejection();
+
+        expect(
+          rejectCalls
         ).toEqual([
           {
             requestId: 16,
             additionalId: 1
           }
         ]);
+
+        expect(
+          component
+            .additionalRejectionConfirmation()
+        ).toBeNull();
 
         expect(
           component.additionalsFor(16)[0]

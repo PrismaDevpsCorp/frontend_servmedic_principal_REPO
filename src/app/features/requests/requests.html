@@ -588,7 +588,39 @@
                       </button>
                     }
 
-                    @if (canFinish(request)) {
+                                        @if (request.status === 'EN_ATENCION') {
+                      <a
+                        class="report-link"
+                        [routerLink]="[
+                          '/attention-report',
+                          request.id
+                        ]">
+                        {{
+                          isReportComplete(request.id)
+                            ? 'Editar ficha'
+                            : 'Llenar ficha'
+                        }}
+                      </a>
+                    }
+
+                    @if (
+                      request.status === 'EN_ATENCION'
+                      && !isReportComplete(request.id)
+                    ) {
+                      <button
+                        type="button"
+                        class="finish-disabled-action"
+                        disabled
+                        title="Debe completar la ficha de atencion antes de finalizar.">
+                        Finalizar
+                      </button>
+
+                      <span class="attention-report-required">
+                        DEBE INGRESAR DATOS EN LA FICHA DE ATENCION
+                      </span>
+                    }
+
+@if (canFinish(request)) {
                       <button
                         type="button"
                         (click)="finishWithAdditionalGuard(request)"
@@ -628,9 +660,22 @@
                 <tr class="specialist-payment-detail-row">
                   <td colspan="7">
 
-                    <app-specialist-manual-payment
-                      [requestId]="request.id">
-                    </app-specialist-manual-payment>
+                    <button
+                      type="button"
+                      class="payment-details-toggle"
+                      (click)="togglePaymentDetails(request.id)">
+                      {{
+                        expandedPaymentRequestId() === request.id
+                          ? 'Ocultar detalles del pago'
+                          : 'Detalles del pago'
+                      }}
+                    </button>
+
+                    @if (expandedPaymentRequestId() === request.id) {
+                      <app-specialist-manual-payment
+                                            [requestId]="request.id">
+                                          </app-specialist-manual-payment>
+                    }
 
                   </td>
                 </tr>

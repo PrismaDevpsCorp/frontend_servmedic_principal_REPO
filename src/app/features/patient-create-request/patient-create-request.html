@@ -52,7 +52,7 @@
           type="text"
           name="addressText"
           [(ngModel)]="addressText"
-          placeholder="Ejemplo: Av. Javier Prado 456, San Isidro, Lima"
+          placeholder="La direccion se completara desde el mapa. Valide o corrija este dato."
           [disabled]="saving()"
         />
       </label>
@@ -68,36 +68,11 @@
         />
       </label>
 
-      <label>
-        Latitud
-        <input
-          type="number"
-          step="0.0000001"
-          name="latitude"
-          [(ngModel)]="latitude"
-          [disabled]="saving()"
-        />
-      </label>
 
-      <label>
-        Longitud
-        <input
-          type="number"
-          step="0.0000001"
-          name="longitude"
-          [(ngModel)]="longitude"
-          [disabled]="saving()"
-        />
-      </label>
-
-      <div class="location-actions full">
-        <button type="button" class="secondary-button" (click)="useBrowserLocation()" [disabled]="saving()">
-          Usar mi ubicacion actual
-        </button>
-
-        <small>
-          Para pruebas dejamos coordenadas iniciales de Lima. En produccion se integrara seleccion directa desde mapa.
-        </small>
+      <div class="full">
+        <app-patient-request-location-map
+          (locationChange)="applyMapLocation($event)">
+        </app-patient-request-location-map>
       </div>
 
       <label class="full">

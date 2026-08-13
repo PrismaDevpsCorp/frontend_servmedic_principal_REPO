@@ -344,6 +344,25 @@ describe(
           request
         );
 
+        expect(listCalls).toEqual([]);
+        expect(finishCalls).toEqual([]);
+
+        expect(
+          component.errorMessage()
+        ).toContain(
+          'FICHA DE ATENCION'
+        );
+
+        component.reportStatusByRequestId.set({
+          16: 'COMPLETE'
+        });
+
+        component.errorMessage.set('');
+
+        component.finishWithAdditionalGuard(
+          request
+        );
+
         expect(listCalls).toEqual([16]);
         expect(finishCalls).toEqual([]);
 

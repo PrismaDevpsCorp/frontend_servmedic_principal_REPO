@@ -1,0 +1,50 @@
+
+<section class="patient-location-card">
+  <div class="location-heading">
+    <div>
+      <strong>Ubicacion de la atencion</strong>
+      <span>
+        Use su ubicacion actual o seleccione otro punto en el mapa.
+      </span>
+    </div>
+
+    <button
+      type="button"
+      class="secondary-button"
+      (click)="useCurrentLocation()"
+      [disabled]="locating()">
+      {{
+        locating()
+          ? 'Obteniendo ubicacion...'
+          : 'Usar mi ubicacion actual'
+      }}
+    </button>
+  </div>
+
+  <div class="map-frame">
+    <div
+      #mapContainer
+      class="map-container">
+    </div>
+
+    @if (statusMessage()) {
+      <div class="map-placeholder">
+        <strong>{{ statusMessage() }}</strong>
+      </div>
+    }
+  </div>
+
+  <div class="location-help">
+    <strong>{{ helperMessage() }}</strong>
+
+    @if (resolvingAddress()) {
+      <span>
+        Obteniendo direccion automaticamente...
+      </span>
+    } @else {
+      <span>
+        Puede hacer clic sobre el mapa o arrastrar el marcador.
+      </span>
+    }
+  </div>
+</section>

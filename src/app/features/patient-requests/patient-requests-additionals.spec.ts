@@ -393,6 +393,93 @@ describe(
       }
     );
 
+    // B38_4_DOM_REJECT_CLICK_REGRESSION
+    it(
+      'abre el modal de rechazo al hacer click en el boton real',
+      () => {
+        const fixture =
+          TestBed.createComponent(
+            PatientRequests
+          );
+
+        const component =
+          fixture.componentInstance;
+
+        // Primera deteccion para completar inicializacion Angular.
+        fixture.detectChanges();
+
+        // Estado determinista de una solicitud EN_ATENCION
+        // con un adicional PENDING.
+        component.requests.set([
+          request
+        ]);
+
+        component.expandedAdditionalRequestId.set(
+          request.id
+        );
+
+        component.additionalsByRequestId.set({
+          [request.id]: [
+            pending
+          ]
+        });
+
+        fixture.detectChanges();
+
+        const rejectButton =
+          fixture.nativeElement.querySelector(
+            '.patient-additional-reject'
+          ) as HTMLButtonElement | null;
+
+        expect(
+          rejectButton
+        ).not.toBeNull();
+
+        expect(
+          rejectButton?.disabled
+        ).toBe(false);
+
+        // Este click es la regresion que faltaba:
+        // NO llamamos component.rejectAdditional() directamente.
+        rejectButton?.click();
+
+        fixture.detectChanges();
+
+        expect(
+          component
+            .additionalRejectionConfirmation()
+        ).not.toBeNull();
+
+        const backdrop =
+          fixture.nativeElement.querySelector(
+            '.additional-rejection-backdrop'
+          ) as HTMLElement | null;
+
+        const modal =
+          fixture.nativeElement.querySelector(
+            '.additional-rejection-modal'
+          ) as HTMLElement | null;
+
+        expect(
+          backdrop
+        ).not.toBeNull();
+
+        expect(
+          modal
+        ).not.toBeNull();
+
+        expect(
+          modal?.textContent
+        ).toContain(
+          'Rechazar cargo adicional'
+        );
+
+        // Abrir el modal NO debe ejecutar aun la llamada HTTP.
+        expect(
+          rejectCalls
+        ).toEqual([]);
+      }
+    );
     it(
       'rechaza un adicional sin alterar el total original',
       () => {

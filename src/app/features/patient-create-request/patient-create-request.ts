@@ -67,12 +67,6 @@ export class PatientCreateRequest {
   ): void {
     this.latitude = location.latitude;
     this.longitude = location.longitude;
-
-    if (location.addressText?.trim()) {
-      this.addressText =
-        location.addressText.trim();
-    }
-
     this.errorMessage.set('');
   }
 

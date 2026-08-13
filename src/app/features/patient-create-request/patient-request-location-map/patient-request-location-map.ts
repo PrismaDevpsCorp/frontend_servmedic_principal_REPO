@@ -14,7 +14,6 @@ import { environment } from '../../../../environments/environment';
 export interface PatientMapLocation {
   latitude: number;
   longitude: number;
-  addressText?: string;
 }
 
 @Component({
@@ -37,13 +36,11 @@ export class PatientRequestLocationMap
     'Obtendremos su ubicacion actual. Tambien puede hacer clic en el mapa o mover el marcador.'
   );
   locating = signal(false);
-  resolvingAddress = signal(false);
 
   private mapbox: any;
   private map: any;
   private marker: any;
   private runtimeToken: string | undefined;
-  private accessToken = '';
 
   private readonly fallbackCenter: [number, number] = [
     -77.537964,
@@ -80,7 +77,7 @@ export class PatientRequestLocationMap
       (position) => {
         this.locating.set(false);
 
-        void this.selectLocation(
+        this.selectLocation(
           position.coords.longitude,
           position.coords.latitude,
           true
@@ -115,7 +112,6 @@ export class PatientRequestLocationMap
       const mapbox = await this.loadMapbox();
 
       mapbox.accessToken = token;
-      this.accessToken = token;
 
       if (!this.mapContainer) {
         this.statusMessage.set(
@@ -139,7 +135,7 @@ export class PatientRequestLocationMap
       this.map.on(
         'click',
         (event: any) => {
-          void this.selectLocation(
+          this.selectLocation(
             Number(event.lngLat.lng),
             Number(event.lngLat.lat),
             false
@@ -163,11 +159,11 @@ export class PatientRequestLocationMap
     }
   }
 
-  private async selectLocation(
+  private selectLocation(
     longitude: number,
     latitude: number,
     fromBrowser: boolean
-  ): Promise<void> {
+  ): void {
     if (
       !Number.isFinite(longitude)
       || !Number.isFinite(latitude)
@@ -200,7 +196,7 @@ export class PatientRequestLocationMap
             const position =
               this.marker.getLngLat();
 
-            void this.selectLocation(
+            this.selectLocation(
               Number(position.lng),
               Number(position.lat),
               false
@@ -219,115 +215,16 @@ export class PatientRequestLocationMap
       });
     }
 
-    const addressText =
-      await this.reverseGeocode(
-        normalizedLongitude,
-        normalizedLatitude
-      );
-
     this.locationChange.emit({
       latitude: normalizedLatitude,
-      longitude: normalizedLongitude,
-      addressText
+      longitude: normalizedLongitude
     });
 
     this.helperMessage.set(
       fromBrowser
-        ? 'Ubicacion actual obtenida. Valide la direccion o mueva el marcador si la atencion sera en otro lugar.'
-        : 'Lugar de atencion actualizado. Valide o corrija la direccion antes de crear la solicitud.'
+        ? 'Ubicacion actual obtenida. Escriba la direccion de atencion y mueva el marcador si la atencion sera en otro lugar.'
+        : 'Lugar de atencion actualizado. Escriba o valide manualmente la direccion antes de crear la solicitud.'
     );
-  }
-
-  private async reverseGeocode(
-    longitude: number,
-    latitude: number
-  ): Promise<string | undefined> {
-    if (!this.accessToken) {
-      return undefined;
-    }
-
-    this.resolvingAddress.set(true);
-
-    try {
-      const url = new URL(
-        'https://api.mapbox.com/search/geocode/v6/reverse'
-      );
-
-      url.searchParams.set(
-        'longitude',
-        String(longitude)
-      );
-
-      url.searchParams.set(
-        'latitude',
-        String(latitude)
-      );
-
-      url.searchParams.set(
-        'language',
-        'es'
-      );
-
-      url.searchParams.set(
-        'limit',
-        '1'
-      );
-
-      url.searchParams.set(
-        'access_token',
-        this.accessToken
-      );
-
-      const response = await fetch(
-        url.toString(),
-        {
-          cache: 'no-store'
-        }
-      );
-
-      if (!response.ok) {
-        return undefined;
-      }
-
-      const payload = await response.json() as {
-        features?: Array<{
-          properties?: {
-            full_address?: string;
-            name_preferred?: string;
-            name?: string;
-            place_formatted?: string;
-          };
-        }>;
-      };
-
-      const properties =
-        payload.features?.[0]?.properties;
-
-      const name =
-        properties?.name_preferred
-        ?? properties?.name
-        ?? '';
-
-      const place =
-        properties?.place_formatted
-        ?? '';
-
-      const resolved =
-        properties?.full_address
-        ?? (
-          name && place
-            ? name + ', ' + place
-            : name
-        );
-
-      return resolved?.trim() || undefined;
-    }
-    catch {
-      return undefined;
-    }
-    finally {
-      this.resolvingAddress.set(false);
-    }
   }
 
   private async loadMapbox(): Promise<any> {

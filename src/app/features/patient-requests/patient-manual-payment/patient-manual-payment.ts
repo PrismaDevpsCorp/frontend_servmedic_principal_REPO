@@ -27,10 +27,7 @@ import {
   template: `
     <section
       class="payment-card"
-      [class.payment-collapsed]="
-        payment()?.paymentStatus === 'PAID'
-        && !paymentDetailsExpanded()
-      ">
+      [class.payment-collapsed]="!paymentDetailsExpanded()">
 
       <div class="payment-heading">
         <div>
@@ -58,68 +55,24 @@ import {
         }
       </div>
 
-      @if (payment(); as current) {
+            <button
+        type="button"
+        class="patient-payment-toggle"
+        (click)="togglePaymentDetails()"
+        [attr.aria-expanded]="paymentDetailsExpanded()"
+        [attr.aria-controls]="
+          'patient-payment-details-' + requestId
+        ">
 
-        @if (current.paymentStatus === 'PAID') {
-
-          <div class="patient-payment-collapsed-summary">
-
-            <div class="patient-payment-summary-main">
-
-              <span>
-                Pago realizado y confirmado
-              </span>
-
-              <strong>
-                S/
-                {{ current.totalAmount | number:'1.2-2' }}
-              </strong>
-
-              <small>
-                Método:
-                {{ methodLabel(current.paymentMethod) }}
-              </small>
-            </div>
-
-            <div class="patient-payment-summary-confirmation">
-
-              <b>
-                CONFIRMADO
-              </b>
-
-              @if (current.verifiedAt) {
-
-                <small>
-                  {{
-                    current.verifiedAt
-                    | date:'dd/MM/yyyy HH:mm'
-                  }}
-                </small>
-              }
-            </div>
-          </div>
-
-          <button
-            type="button"
-            class="patient-payment-toggle"
-            (click)="togglePaymentDetails()"
-            [attr.aria-expanded]="
-              paymentDetailsExpanded()
-            "
-            [attr.aria-controls]="
-              'patient-payment-details-' + requestId
-            ">
-
-            {{
-              paymentDetailsExpanded()
-                ? 'OCULTAR PAGO'
-                : 'VER PAGO'
-            }}
-          </button>
-        }
-      }
-
-      <div
+        {{
+          paymentDetailsExpanded()
+            ? 'OCULTAR PAGO'
+            : payment()?.paymentStatus === 'PAID'
+              ? 'VER PAGO REALIZADO'
+              : 'VER PAGO'
+        }}
+      </button>
+<div
         class="patient-payment-details"
         [attr.id]="
           'patient-payment-details-' + requestId

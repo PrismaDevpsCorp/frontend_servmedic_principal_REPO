@@ -1348,3 +1348,102 @@ body .additional-approval-button-icon {
     justify-self: stretch;
   }
 }
+
+
+/* ==================================================================
+   B38.4-C3-H6-R1C2-B-R1 SHARED MOBILE RESPONSIVE TABLES
+   Scope exclusivo H6. Desktop permanece sin cambios.
+   ================================================================== */
+@media (max-width: 760px) {
+  .responsive-mobile-card-table {
+    overflow-x: visible;
+  }
+
+  .responsive-mobile-card-table table,
+  .responsive-mobile-card-table tbody,
+  .responsive-mobile-card-table tr,
+  .responsive-mobile-card-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-mobile-card-table thead {
+    display: none;
+  }
+
+  .responsive-mobile-card-table tbody {
+    display: grid;
+    gap: 14px;
+  }
+
+  .responsive-mobile-card-table tbody > tr {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 14px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    background: #fff;
+  }
+
+  .responsive-mobile-card-table tbody > tr > td {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 9px 0;
+    overflow-wrap: anywhere;
+    border: 0;
+  }
+
+  .responsive-mobile-card-table tbody > tr > td + td {
+    border-top: 1px solid #eef2f7;
+  }
+
+  .responsive-mobile-card-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 4px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .06em;
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+
+  .responsive-mobile-card-table td[colspan] {
+    padding: 0;
+    border: 0;
+  }
+
+  .responsive-mobile-card-table td[colspan]::before {
+    display: none;
+  }
+
+  .responsive-mobile-card-table tbody > tr:has(> td[colspan]) {
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .responsive-assigned-history-table .row-actions,
+  .responsive-patient-requests-table td[data-label="Gestión"] {
+    display: grid;
+    gap: 8px;
+  }
+
+  .responsive-assigned-history-table .row-actions > button,
+  .responsive-assigned-history-table .row-actions > a,
+  .responsive-patient-requests-table td[data-label="Gestión"] > button,
+  .responsive-patient-requests-table td[data-label="Gestión"] > a {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+  }
+
+  .responsive-patient-requests-table app-patient-manual-payment {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+  }
+}

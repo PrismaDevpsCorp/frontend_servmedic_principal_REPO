@@ -116,7 +116,7 @@ describe(
     );
 
     it(
-      'PAID inicia colapsado y VER PAGO / OCULTAR PAGO funcionan con click DOM',
+      'PAID inicia colapsado y VER PAGO REALIZADO / OCULTAR PAGO funcionan con click DOM',
       () => {
 
         paymentService.find.mockReturnValue(
@@ -158,45 +158,14 @@ describe(
           )
         ).toBe(true);
 
-        const summary =
+        const legacySummary =
           fixture.nativeElement.querySelector(
             '.patient-payment-collapsed-summary'
           ) as HTMLElement | null;
 
-        expect(summary).not.toBeNull();
-
-        const summaryText =
-          (
-            summary?.textContent
-            ?? ''
-          ).replace(
-            /\s+/g,
-            ' '
-          );
-
         expect(
-          summaryText
-        ).toContain(
-          'Pago realizado y confirmado'
-        );
-
-        expect(
-          summaryText
-        ).toContain(
-          '90.00'
-        );
-
-        expect(
-          summaryText.toUpperCase()
-        ).toContain(
-          'YAPE'
-        );
-
-        expect(
-          summaryText
-        ).toContain(
-          'CONFIRMADO'
-        );
+          legacySummary
+        ).toBeNull();
 
         const details =
           fixture.nativeElement.querySelector(
@@ -215,7 +184,7 @@ describe(
         expect(
           toggle?.textContent
         ).toContain(
-          'VER PAGO'
+          'VER PAGO REALIZADO'
         );
 
         expect(
@@ -287,7 +256,7 @@ describe(
         expect(
           toggle?.textContent
         ).toContain(
-          'VER PAGO'
+          'VER PAGO REALIZADO'
         );
 
         expect(
@@ -301,7 +270,7 @@ describe(
     );
 
     it(
-      'PENDING permanece expandido y no muestra boton de colapso',
+      'PENDING inicia colapsado y VER PAGO / OCULTAR PAGO funcionan con click DOM',
       () => {
 
         paymentService.find.mockReturnValue(
@@ -336,14 +305,92 @@ describe(
           card?.classList.contains(
             'payment-collapsed'
           )
-        ).toBe(false);
+        ).toBe(true);
 
-        const toggle =
+        let toggle =
           fixture.nativeElement.querySelector(
             '.patient-payment-toggle'
           ) as HTMLButtonElement | null;
 
-        expect(toggle).toBeNull();
+        expect(toggle).not.toBeNull();
+
+        expect(
+          toggle?.textContent
+        ).toContain(
+          'VER PAGO'
+        );
+
+        expect(
+          toggle?.getAttribute(
+            'aria-expanded'
+          )
+        ).toBe(
+          'false'
+        );
+
+        /*
+         * CLICK REAL: abrir.
+         */
+        toggle?.click();
+
+        fixture.detectChanges();
+
+        expect(
+          card?.classList.contains(
+            'payment-collapsed'
+          )
+        ).toBe(false);
+
+        toggle =
+          fixture.nativeElement.querySelector(
+            '.patient-payment-toggle'
+          ) as HTMLButtonElement | null;
+
+        expect(
+          toggle?.textContent
+        ).toContain(
+          'OCULTAR PAGO'
+        );
+
+        expect(
+          toggle?.getAttribute(
+            'aria-expanded'
+          )
+        ).toBe(
+          'true'
+        );
+
+        /*
+         * CLICK REAL: cerrar.
+         */
+        toggle?.click();
+
+        fixture.detectChanges();
+
+        expect(
+          card?.classList.contains(
+            'payment-collapsed'
+          )
+        ).toBe(true);
+
+        toggle =
+          fixture.nativeElement.querySelector(
+            '.patient-payment-toggle'
+          ) as HTMLButtonElement | null;
+
+        expect(
+          toggle?.textContent
+        ).toContain(
+          'VER PAGO'
+        );
+
+        expect(
+          toggle?.getAttribute(
+            'aria-expanded'
+          )
+        ).toBe(
+          'false'
+        );
 
         const details =
           fixture.nativeElement.querySelector(

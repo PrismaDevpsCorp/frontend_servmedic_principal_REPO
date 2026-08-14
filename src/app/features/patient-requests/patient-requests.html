@@ -109,7 +109,7 @@
         No hay resultados con los filtros aplicados.
       </div>
     } @else {
-      <div class="table-wrap">
+      <div class="table-wrap responsive-mobile-card-table responsive-patient-requests-table">
         <table>
           <thead>
             <tr>
@@ -129,7 +129,7 @@
               track request.id
             ) {
               <tr>
-                <td>
+                <td data-label="Código">
                   <strong>
                     {{ request.requestCode }}
                   </strong>
@@ -139,7 +139,7 @@
                   </small>
                 </td>
 
-                <td>
+                <td data-label="Servicio">
                   {{ request.serviceName }}
 
                   <small>
@@ -147,7 +147,7 @@
                   </small>
                 </td>
 
-                <td>
+                <td data-label="Estado">
                   <span
                     class="status-badge"
                     [ngClass]="requestStatusClass(request.status)">
@@ -155,14 +155,14 @@
                   </span>
                 </td>
 
-                <td>
+                <td data-label="Especialista elegido">
                   {{
                     request.acceptedSpecialistFullName
                     || 'Pendiente de elección'
                   }}
                 </td>
 
-                <td>
+                <td data-label="Total vigente">
                   @if (
                     request.status !== 'PENDING'
                     && request.acceptedSpecialistProfileId !== null
@@ -209,14 +209,14 @@
                   }
                 </td>
 
-                <td>
+                <td data-label="Fecha">
                   {{
                     request.createdAt
                       | date:'dd/MM/yyyy HH:mm'
                   }}
                 </td>
 
-                <td>
+                <td data-label="Gestión">
                   <div class="patient-request-actions">
                     <button
                       type="button"

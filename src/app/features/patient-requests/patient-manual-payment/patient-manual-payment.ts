@@ -574,9 +574,11 @@ import {
 /* B38.4-C3-H6-R2B2 - pago compacto desktop, movil preservado */
 .patient-payment-toggle {
   display: inline-flex;
-  width: auto;
+  width: fit-content;
+  max-width: 100%;
   min-width: 0;
   min-height: 32px;
+  justify-self: start;
   align-items: center;
   justify-content: center;
   margin: 3px 0;
@@ -610,7 +612,9 @@ import {
 
   .patient-payment-toggle {
     width: 100%;
+    max-width: 100%;
     min-height: 44px;
+    justify-self: stretch;
     margin: 10px 0;
     padding: 9px 14px;
     font-size: inherit;

@@ -571,16 +571,24 @@ import {
   color: #64748b;
 }
 
+/* B38.4-C3-H6-R2B2 - pago compacto desktop, movil preservado */
 .patient-payment-toggle {
-  width: 100%;
-  min-height: 42px;
-  margin: 10px 0;
+  display: inline-flex;
+  width: auto;
+  min-width: 0;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  margin: 3px 0;
   border: 1px solid #0f766e;
-  border-radius: 10px;
-  padding: 9px 14px;
+  border-radius: 8px;
+  padding: 5px 10px;
   background: #f0fdfa;
   color: #0f766e;
+  font-size: 0.78rem;
+  line-height: 1.2;
   font-weight: 800;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -588,7 +596,7 @@ import {
   background: #ccfbf1;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 760px) {
 
   .payment-card.payment-collapsed
     > .patient-payment-collapsed-summary {
@@ -601,7 +609,12 @@ import {
   }
 
   .patient-payment-toggle {
+    width: 100%;
     min-height: 44px;
+    margin: 10px 0;
+    padding: 9px 14px;
+    font-size: inherit;
+    white-space: normal;
   }
 }
 `]

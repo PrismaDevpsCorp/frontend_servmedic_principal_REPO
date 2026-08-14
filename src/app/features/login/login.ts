@@ -1,20 +1,40 @@
-import { Component, inject, signal } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, LoginAccessType } from '../../core/auth/auth.service';
+import {
+  AuthService,
+  LoginAccessType
+} from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })
 export class Login {
-  private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
+  private readonly authService =
+    inject(AuthService);
 
-  accessType: LoginAccessType = 'ESPECIALISTA';
+  private readonly router =
+    inject(Router);
+
+  private readonly sessionExpiredNoticeKey =
+    'medicdrive_session_expired_notice';
+
+  private readonly sessionExpiryRedirectKey =
+    'medicdrive_session_expiry_redirecting';
+
+  accessType: LoginAccessType =
+    'ESPECIALISTA';
 
   username = '';
   password = '';
@@ -22,7 +42,30 @@ export class Login {
   loading = signal(false);
   errorMessage = signal('');
 
-  selectAccessType(type: LoginAccessType): void {
+  constructor() {
+    const sessionExpired =
+      localStorage.getItem(
+        this.sessionExpiredNoticeKey
+      ) === '1';
+
+    localStorage.removeItem(
+      this.sessionExpiredNoticeKey
+    );
+
+    localStorage.removeItem(
+      this.sessionExpiryRedirectKey
+    );
+
+    if (sessionExpired) {
+      this.errorMessage.set(
+        'Tu sesión ha expirado. Inicia sesión nuevamente.'
+      );
+    }
+  }
+
+  selectAccessType(
+    type: LoginAccessType
+  ): void {
     this.accessType = type;
     this.errorMessage.set('');
 
@@ -39,23 +82,41 @@ export class Login {
   login(): void {
     this.errorMessage.set('');
 
-    if (!this.username || !this.password) {
-      this.errorMessage.set('Ingrese usuario y contrasena.');
+    if (
+      !this.username
+      || !this.password
+    ) {
+      this.errorMessage.set(
+        'Ingrese usuario y contrasena.'
+      );
+
       return;
     }
 
     this.loading.set(true);
 
-    this.authService.loginAs(this.accessType, this.username, this.password).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.router.navigate([this.authService.homeRoute()]);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.errorMessage.set('Credenciales invalidas o usuario no autorizado para el perfil seleccionado.');
-      }
-    });
+    this.authService
+      .loginAs(
+        this.accessType,
+        this.username,
+        this.password
+      )
+      .subscribe({
+        next: () => {
+          this.loading.set(false);
+
+          this.router.navigate([
+            this.authService.homeRoute()
+          ]);
+        },
+        error: () => {
+          this.loading.set(false);
+
+          this.errorMessage.set(
+            'Credenciales invalidas o usuario no autorizado para el perfil seleccionado.'
+          );
+        }
+      });
   }
 
   accessTitle(): string {

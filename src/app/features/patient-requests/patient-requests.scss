@@ -518,3 +518,49 @@ td small {
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+/* ==================================================================
+   B38.4-C3-H6-R2B2 DESKTOP COMPACT PATIENT REQUESTS
+   Solo desktop. El responsive movil H6 <= 760px permanece intacto.
+   ================================================================== */
+@media (min-width: 761px) {
+
+  .responsive-patient-requests-table {
+    margin-top: 12px;
+  }
+
+  .responsive-patient-requests-table th,
+  .responsive-patient-requests-table td {
+    padding: 9px 10px;
+  }
+
+  .responsive-patient-requests-table th {
+    line-height: 1.2;
+  }
+
+  .responsive-patient-requests-table td {
+    line-height: 1.3;
+  }
+
+  .responsive-patient-requests-table td small {
+    margin-top: 2px;
+    line-height: 1.25;
+  }
+
+  .responsive-patient-requests-table .status-badge {
+    padding: 5px 9px;
+  }
+
+  .responsive-patient-requests-table
+    .patient-payment-detail-row > td {
+    padding: 3px 10px 7px;
+  }
+
+  .responsive-patient-requests-table
+    .patient-payment-detail-row
+    app-patient-manual-payment {
+    display: block;
+    width: auto;
+    max-width: 100%;
+  }
+}

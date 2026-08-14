@@ -7,8 +7,10 @@ import {
   OnDestroy,
   Output,
   ViewChild,
-  signal
+  signal,
+  inject
 } from '@angular/core';
+import { MapboxTemporaryReverseGeocodingService } from '../../../core/services/mapbox-temporary-reverse-geocoding.service';
 import { environment } from '../../../../environments/environment';
 
 export interface PatientMapLocation {
@@ -23,6 +25,22 @@ export interface PatientMapLocation {
 })
 export class PatientRequestLocationMap
   implements AfterViewInit, OnDestroy {
+
+  private readonly reverseGeocodingService =
+    inject(
+      MapboxTemporaryReverseGeocodingService
+    );
+
+  approximateAddress =
+    signal('');
+
+  reverseGeocodingLoading =
+    signal(false);
+
+  private reverseRequestId = 0;
+
+  private reverseGeocodingToken = '';
+
 
   @ViewChild('mapContainer')
   mapContainer?: ElementRef<HTMLDivElement>;
@@ -112,6 +130,9 @@ export class PatientRequestLocationMap
       const mapbox = await this.loadMapbox();
 
       mapbox.accessToken = token;
+
+    this.reverseGeocodingToken =
+      token;
 
       if (!this.mapContainer) {
         this.statusMessage.set(
@@ -220,11 +241,63 @@ export class PatientRequestLocationMap
       longitude: normalizedLongitude
     });
 
+    void this.resolveApproximateAddress(
+      normalizedLatitude,
+      normalizedLongitude
+    );
+
     this.helperMessage.set(
       fromBrowser
         ? 'Ubicacion actual obtenida. Escriba la direccion de atencion y mueva el marcador si la atencion sera en otro lugar.'
         : 'Lugar de atencion actualizado. Escriba o valide manualmente la direccion antes de crear la solicitud.'
     );
+  }
+
+
+  private async resolveApproximateAddress(
+    latitude: number,
+    longitude: number
+  ): Promise<void> {
+
+    const requestId =
+      ++this.reverseRequestId;
+
+    this.reverseGeocodingLoading.set(true);
+
+    this.approximateAddress.set('');
+
+    try {
+
+      const address =
+        await this.reverseGeocodingService.reverse(
+          latitude,
+          longitude,
+          this.reverseGeocodingToken
+        );
+
+      if (
+        requestId
+        !== this.reverseRequestId
+      ) {
+
+        return;
+      }
+
+      this.approximateAddress.set(
+        address
+        ?? 'No se encontró una dirección aproximada para este punto.'
+      );
+    }
+    finally {
+
+      if (
+        requestId
+        === this.reverseRequestId
+      ) {
+
+        this.reverseGeocodingLoading.set(false);
+      }
+    }
   }
 
   private async loadMapbox(): Promise<any> {

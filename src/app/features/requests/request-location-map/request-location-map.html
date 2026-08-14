@@ -72,7 +72,7 @@
     </div>
   </div>
 
-  
+
   <div
     class="location-runtime-message"
     [class.warning]="hasLocationWarning()">
@@ -118,6 +118,38 @@
         <span>Direccion</span>
         <strong>{{ selectedRequest.addressText }}</strong>
         <small>{{ selectedRequest.addressReference || 'Sin referencia' }}</small>
+      </div>
+
+      <div class="selected-approximate-address">
+
+        <span>
+          Ubicación aproximada según mapa
+        </span>
+
+        @if (selectedApproximateAddressLoading()) {
+
+          <strong>
+            Consultando referencia...
+          </strong>
+
+        } @else if (selectedApproximateAddress()) {
+
+          <strong>
+            {{ selectedApproximateAddress() }}
+          </strong>
+
+        } @else {
+
+          <strong>
+            Referencia aproximada no disponible.
+          </strong>
+        }
+
+        <small>
+          Referencia visual temporal.
+          La dirección ingresada por el paciente
+          continúa siendo la dirección oficial.
+        </small>
       </div>
 
       <div>

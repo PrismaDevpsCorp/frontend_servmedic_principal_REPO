@@ -34,7 +34,42 @@
     }
   </div>
 
-  <div class="location-help">
+
+  <div
+    class="approximate-address"
+    aria-live="polite">
+
+    <span>
+      Ubicación aproximada detectada
+    </span>
+
+    @if (reverseGeocodingLoading()) {
+
+      <strong>
+        Consultando referencia del mapa...
+      </strong>
+
+    } @else if (approximateAddress()) {
+
+      <strong>
+        {{ approximateAddress() }}
+      </strong>
+
+    } @else {
+
+      <strong>
+        Seleccione un punto en el mapa.
+      </strong>
+    }
+
+    <small>
+      Referencia visual temporal.
+      No autocompleta ni reemplaza la Dirección
+      ingresada manualmente.
+    </small>
+  </div>
+
+<div class="location-help">
     <strong>{{ helperMessage() }}</strong>
 
     <span>

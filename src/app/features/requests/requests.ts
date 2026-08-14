@@ -117,6 +117,9 @@ export class Requests {
   selectedMapRequest =
     signal<MedicalRequest | null>(null);
 
+  expandedOpportunityRequestId =
+    signal<number | null>(null);
+
   specialistLocation =
     signal<SpecialistMapLocation | null>(null);
 
@@ -749,6 +752,38 @@ export class Requests {
       this.nearestRequestId()
       === request.id
     );
+  }
+
+
+  toggleOpportunityDetails(
+    requestId: number
+  ): void {
+
+    const current =
+      this.expandedOpportunityRequestId();
+
+    const willExpand =
+      current !== requestId;
+
+    this.expandedOpportunityRequestId.set(
+      willExpand
+        ? requestId
+        : null
+    );
+
+    const editorRequestId =
+      this.proposalEditorRequestId();
+
+    if (
+      editorRequestId !== null
+      && (
+        !willExpand
+        || editorRequestId !== requestId
+      )
+    ) {
+
+      this.closeProposalEditor();
+    }
   }
 
   selectMapRequest(

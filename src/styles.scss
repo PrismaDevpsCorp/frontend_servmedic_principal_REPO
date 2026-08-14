@@ -1219,3 +1219,132 @@ body .additional-approval-button-icon {
   }
 }
 /* END MEDICDRIVE ADDITIONAL APPROVAL OVERLAY HOTFIX */
+
+/* =========================================================
+ * B38.4-C3-H2-R9
+ * Oportunidades compactas especialista.
+ *
+ * Global intencionalmente para no incrementar
+ * el component-style budget de requests.scss.
+ * ========================================================= */
+
+.opportunity-card {
+  grid-column: 1 / -1;
+}
+
+.opportunity-card:not(.opportunity-expanded) {
+  padding: 14px 16px;
+  gap: 12px;
+}
+
+.opportunity-card:not(.opportunity-expanded)
+  > :not(.request-top):not(.opportunity-compact):not(.opportunity-toggle) {
+  display: none !important;
+}
+
+.opportunity-card.opportunity-expanded
+  > .opportunity-compact {
+  display: none;
+}
+
+.opportunity-compact {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 0.8fr)
+    minmax(220px, 1.5fr)
+    minmax(120px, auto)
+    minmax(110px, auto);
+  align-items: center;
+  gap: 12px;
+}
+
+.opportunity-compact > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.opportunity-compact span {
+  color: #64748b;
+  font-size: 0.73rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.opportunity-compact strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #16324f;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.opportunity-compact-total strong {
+  color: #0f766e;
+}
+
+.opportunity-toggle {
+  justify-self: end;
+  min-width: 145px;
+  border: 1px solid #0f766e;
+  border-radius: 10px;
+  padding: 9px 14px;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.opportunity-toggle:hover {
+  background: #ccfbf1;
+}
+
+.opportunity-expanded .opportunity-toggle {
+  margin-bottom: 4px;
+}
+
+
+/* B38.4-C3-H3-B1 */
+
+.opportunity-details {
+  display: contents;
+}
+
+.opportunity-compact-distance {
+  min-width: 0;
+}
+
+.opportunity-compact-distance small {
+  width: max-content;
+  margin-top: 2px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+
+  .opportunity-card {
+    grid-column: 1;
+  }
+
+  .opportunity-compact {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .opportunity-compact strong {
+    overflow: visible;
+    white-space: normal;
+  }
+
+  .opportunity-toggle {
+    width: 100%;
+    min-height: 44px;
+    justify-self: stretch;
+  }
+}

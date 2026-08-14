@@ -1,4 +1,5 @@
-import { CommonModule } from '@angular/common';
+import {
+  CommonModule } from '@angular/common';
 import {
   Component,
   Input,
@@ -24,7 +25,12 @@ import {
   ],
 
   template: `
-    <section class="payment-card">
+    <section
+      class="payment-card"
+      [class.payment-collapsed]="
+        payment()?.paymentStatus === 'PAID'
+        && !paymentDetailsExpanded()
+      ">
 
       <div class="payment-heading">
         <div>
@@ -51,6 +57,74 @@ import {
           </b>
         }
       </div>
+
+      @if (payment(); as current) {
+
+        @if (current.paymentStatus === 'PAID') {
+
+          <div class="patient-payment-collapsed-summary">
+
+            <div class="patient-payment-summary-main">
+
+              <span>
+                Pago realizado y confirmado
+              </span>
+
+              <strong>
+                S/
+                {{ current.totalAmount | number:'1.2-2' }}
+              </strong>
+
+              <small>
+                Método:
+                {{ methodLabel(current.paymentMethod) }}
+              </small>
+            </div>
+
+            <div class="patient-payment-summary-confirmation">
+
+              <b>
+                CONFIRMADO
+              </b>
+
+              @if (current.verifiedAt) {
+
+                <small>
+                  {{
+                    current.verifiedAt
+                    | date:'dd/MM/yyyy HH:mm'
+                  }}
+                </small>
+              }
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="patient-payment-toggle"
+            (click)="togglePaymentDetails()"
+            [attr.aria-expanded]="
+              paymentDetailsExpanded()
+            "
+            [attr.aria-controls]="
+              'patient-payment-details-' + requestId
+            ">
+
+            {{
+              paymentDetailsExpanded()
+                ? 'OCULTAR PAGO'
+                : 'VER PAGO'
+            }}
+          </button>
+        }
+      }
+
+      <div
+        class="patient-payment-details"
+        [attr.id]="
+          'patient-payment-details-' + requestId
+        ">
+
 
       @if (errorMessage()) {
         <div class="error-box">
@@ -274,7 +348,10 @@ import {
         </div>
       }
 
-    </section>
+
+      </div>
+
+</section>
   `,
 
   styles: [`
@@ -476,10 +553,112 @@ import {
         grid-column: auto;
       }
     }
-  `]
+
+/* B38.4-C3-H3-B1 - pago confirmado realmente colapsable */
+
+.patient-payment-collapsed-summary {
+  display: none;
+}
+
+.payment-card.payment-collapsed
+  > .payment-heading,
+.payment-card.payment-collapsed
+  > .patient-payment-details {
+  display: none;
+}
+
+.payment-card.payment-collapsed
+  > .patient-payment-collapsed-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid #bbf7d0;
+  border-radius: 14px;
+  background: #f0fdf4;
+}
+
+.patient-payment-summary-main {
+  display: grid;
+  gap: 4px;
+}
+
+.patient-payment-summary-main > span {
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.patient-payment-summary-main > strong {
+  color: #166534;
+  font-size: 1.15rem;
+}
+
+.patient-payment-summary-main > small {
+  color: #475569;
+}
+
+.patient-payment-summary-confirmation {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.patient-payment-summary-confirmation > b {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.76rem;
+}
+
+.patient-payment-summary-confirmation > small {
+  color: #64748b;
+}
+
+.patient-payment-toggle {
+  width: 100%;
+  min-height: 42px;
+  margin: 10px 0;
+  border: 1px solid #0f766e;
+  border-radius: 10px;
+  padding: 9px 14px;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.patient-payment-toggle:hover {
+  background: #ccfbf1;
+}
+
+@media (max-width: 640px) {
+
+  .payment-card.payment-collapsed
+    > .patient-payment-collapsed-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .patient-payment-summary-confirmation {
+    justify-items: start;
+  }
+
+  .patient-payment-toggle {
+    min-height: 44px;
+  }
+}
+`]
 })
 export class PatientManualPaymentComponent
   implements OnInit {
+
+  paymentDetailsExpanded =
+    signal(false);
+
 
   private readonly paymentService =
     inject(PatientManualPaymentService);
@@ -733,4 +912,12 @@ export class PatientManualPaymentComponent
 
     return response.message ?? fallback;
   }
+
+  togglePaymentDetails(): void {
+
+    this.paymentDetailsExpanded.update(
+      (expanded) => !expanded
+    );
+  }
+
 }

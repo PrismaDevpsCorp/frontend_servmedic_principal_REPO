@@ -495,3 +495,38 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* B38.4-C3-H2-R9 - Temporary Reverse Geocoding */
+
+.selected-approximate-address {
+  display: grid;
+  gap: 5px;
+  padding: 12px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  background: #eff6ff;
+}
+
+.selected-approximate-address span {
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.selected-approximate-address strong {
+  color: #1e3a8a;
+  line-height: 1.35;
+}
+
+.selected-approximate-address small {
+  color: #64748b;
+  line-height: 1.4;
+}
+
+@media (max-width: 760px) {
+
+  .selected-approximate-address {
+    padding: 10px 12px;
+  }
+}

@@ -1,4 +1,5 @@
-import { CommonModule } from '@angular/common';
+import {
+  CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectorRef,
@@ -10,8 +11,11 @@ import {
   OnDestroy,
   Output,
   SimpleChanges,
-  ViewChild
+  ViewChild,
+  inject,
+  signal
 } from '@angular/core';
+import { MapboxTemporaryReverseGeocodingService } from '../../../core/services/mapbox-temporary-reverse-geocoding.service';
 import { MedicalRequest } from '../../../core/models/medical-request.model';
 import { environment } from '../../../../environments/environment';
 
@@ -48,6 +52,22 @@ type DoctorLocationMode = 'REAL' | 'DEMO_HUARAZ' | 'DEMO_LIMA';
   styleUrl: './request-location-map.scss'
 })
 export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
+
+  private readonly reverseGeocodingService =
+    inject(
+      MapboxTemporaryReverseGeocodingService
+    );
+
+  selectedApproximateAddress =
+    signal('');
+
+  selectedApproximateAddressLoading =
+    signal(false);
+
+  private selectedReverseRequestId = 0;
+
+  private reverseGeocodingToken = '';
+
   @Input() requests: MedicalRequest[] = [];
   @Input() selectedRequest: MedicalRequest | null = null;
   @Input() nearestRequestId: number | null = null;
@@ -113,6 +133,11 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+
+    if (changes['selectedRequest']) {
+
+      void this.resolveSelectedApproximateAddress();
+    }
     const selectedChange = changes['selectedRequest'];
 
     if (selectedChange && !selectedChange.firstChange) {
@@ -520,6 +545,11 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
 
     const mapbox = await this.loadMapbox();
     mapbox.accessToken = token;
+
+    this.reverseGeocodingToken =
+      token;
+
+    void this.resolveSelectedApproximateAddress();
 
     const center = await this.resolveInitialCenter(locatedRequests);
 
@@ -1079,4 +1109,65 @@ export class RequestLocationMap implements AfterViewInit, OnChanges, OnDestroy {
     div.textContent = value ?? '';
     return div.innerHTML;
   }
+
+  private async resolveSelectedApproximateAddress(): Promise<void> {
+
+    const selected =
+      this.selectedRequest;
+
+    const requestId =
+      ++this.selectedReverseRequestId;
+
+    this.selectedApproximateAddress.set('');
+
+    if (
+      !selected
+      || selected.latitude === null
+      || selected.latitude === undefined
+      || selected.longitude === null
+      || selected.longitude === undefined
+      || !this.reverseGeocodingToken
+    ) {
+
+      this.selectedApproximateAddressLoading.set(false);
+
+      return;
+    }
+
+    this.selectedApproximateAddressLoading.set(true);
+
+    try {
+
+      const address =
+        await this.reverseGeocodingService.reverse(
+          Number(selected.latitude),
+          Number(selected.longitude),
+          this.reverseGeocodingToken
+        );
+
+      if (
+        requestId
+        !== this.selectedReverseRequestId
+      ) {
+
+        return;
+      }
+
+      this.selectedApproximateAddress.set(
+        address
+        ?? 'No se encontró una dirección aproximada para este punto.'
+      );
+    }
+    finally {
+
+      if (
+        requestId
+        === this.selectedReverseRequestId
+      ) {
+
+        this.selectedApproximateAddressLoading.set(false);
+      }
+    }
+  }
+
 }

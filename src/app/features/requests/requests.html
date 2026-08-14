@@ -80,7 +80,11 @@
           track request.id
         ) {
           <article
-            class="request-card"
+            class="request-card opportunity-card"
+            [class.opportunity-expanded]="
+              expandedOpportunityRequestId()
+              === request.id
+            "
             [class.selected-map-card]="isSelectedMapRequest(request)"
             [class.nearest-request-card]="isNearestRequest(request)">
 
@@ -97,7 +101,103 @@
               </span>
             </div>
 
-            <div class="request-body">
+
+            <div class="opportunity-compact">
+
+              <div>
+                <span>Paciente</span>
+
+                <strong>
+                  {{ request.patientFullName }}
+                </strong>
+              </div>
+
+              <div>
+                <span>Dirección</span>
+
+                <strong>
+                  {{ request.addressText }}
+                </strong>
+              </div>
+
+              @if (
+                proposalPriceSummary(request);
+                as compactPrice
+              ) {
+
+                <div class="opportunity-compact-total">
+
+                  <span>
+                    Total estimado
+                  </span>
+
+                  <strong>
+                    S/
+                    {{
+                      compactPrice.totalAmount
+                      | number:'1.2-2'
+                    }}
+                  </strong>
+                </div>
+              }
+
+
+              @if (
+                calculatedDistanceKm(request)
+                !== null
+              ) {
+
+                <div class="opportunity-compact-distance">
+
+                  <span>
+                    Distancia
+                  </span>
+
+                  <strong>
+                    {{ distanceLabel(request) }}
+                  </strong>
+
+                  @if (isNearestRequest(request)) {
+
+                    <small>
+                      Más cercana
+                    </small>
+                  }
+                </div>
+              }
+</div>
+
+            <button
+              type="button"
+              class="opportunity-toggle"
+              (click)="
+                toggleOpportunityDetails(
+                  request.id
+                )
+              "
+              [attr.aria-expanded]="
+                expandedOpportunityRequestId()
+                === request.id
+              "
+              [attr.aria-controls]="
+                'opportunity-details-' + request.id
+              ">
+
+              {{
+                expandedOpportunityRequestId()
+                === request.id
+                  ? 'OCULTAR DETALLES'
+                  : 'DETALLES'
+              }}
+            </button>
+
+<div
+              class="opportunity-details"
+              [attr.id]="
+                'opportunity-details-' + request.id
+              ">
+
+<div class="request-body">
               <p>
                 <b>Paciente:</b>
                 {{ request.patientFullName }}
@@ -380,7 +480,10 @@
                 </div>
               </div>
             }
-          </article>
+
+            </div>
+
+</article>
         }
       </div>
     }

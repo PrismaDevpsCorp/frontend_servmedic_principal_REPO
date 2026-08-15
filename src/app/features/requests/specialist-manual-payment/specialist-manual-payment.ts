@@ -46,7 +46,8 @@ import {
           <b
             class="status"
             [class.pending]="current.paymentStatus === 'PENDING'"
-            [class.paid]="current.paymentStatus === 'PAID'">
+            [class.paid]="current.paymentStatus === 'PAID'"
+            [class.rejected]="current.paymentStatus === 'REJECTED'">
 
             {{ statusLabel(current.paymentStatus) }}
 
@@ -170,6 +171,31 @@ import {
 
           }
 
+          @if (current.rejectedAt) {
+
+            <span>
+              Rechazada:
+              <b>
+                {{
+                  current.rejectedAt
+                    | date:'dd/MM/yyyy HH:mm'
+                }}
+              </b>
+            </span>
+
+          }
+
+          @if (current.rejectionReason) {
+
+            <span>
+              Motivo:
+              <b>
+                {{ current.rejectionReason }}
+              </b>
+            </span>
+
+          }
+
         </div>
 
         <div class="actions">
@@ -205,6 +231,15 @@ import {
               (click)="openConfirmation()">
 
               Pago realizado
+
+            </button>
+
+            <button
+              type="button"
+              class="danger"
+              (click)="openRejection()">
+
+              Rechazar pago
 
             </button>
 
@@ -244,6 +279,25 @@ import {
           <div class="success-box">
             Pago confirmado. La confirmación quedó registrada
             con fecha y especialista responsable.
+          </div>
+
+        }
+
+        @if (current.paymentStatus === 'REJECTED') {
+
+          <div class="rejected-box">
+            <b>Pago rechazado.</b>
+
+            @if (current.rejectionReason) {
+              <span>
+                {{ current.rejectionReason }}
+              </span>
+            }
+
+            <small>
+              El paciente puede registrar una nueva evidencia
+              para una nueva verificación.
+            </small>
           </div>
 
         }
@@ -341,6 +395,104 @@ import {
       </div>
 
     }
+
+    @if (rejectionOpen() && payment(); as current) {
+
+      <div
+        class="modal-backdrop"
+        (click)="closeRejection()">
+
+        <section
+          class="modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="payment-reject-title"
+          (click)="$event.stopPropagation()">
+
+          <div class="warning-icon">
+            !
+          </div>
+
+          <h3 id="payment-reject-title">
+            Rechazar pago
+          </h3>
+
+          <div class="critical-warning">
+            RECHACE EL PAGO SOLO SI LA EVIDENCIA NO COINCIDE
+            CON EL DINERO REALMENTE RECIBIDO.
+          </div>
+
+          <p>
+            El paciente podrá registrar una nueva evidencia.
+            El intento rechazado quedará conservado
+            en el historial de auditoría.
+          </p>
+
+          <div class="modal-total">
+            <span>Total declarado</span>
+
+            <strong>
+              S/
+              {{ current.totalAmount | number:'1.2-2' }}
+            </strong>
+
+            <small>
+              {{ methodLabel(current.paymentMethod) }}
+            </small>
+          </div>
+
+          <label class="rejection-field">
+            Motivo del rechazo
+
+            <textarea
+              maxlength="500"
+              rows="4"
+              [value]="rejectionReason()"
+              (input)="onRejectionReasonInput($event)"
+              placeholder="Explique por qué el comprobante o pago no puede ser validado."
+            ></textarea>
+
+            <small>
+              {{ rejectionReason().length }}/500
+            </small>
+          </label>
+
+          <div class="actions">
+
+            <button
+              type="button"
+              class="secondary"
+              (click)="closeRejection()"
+              [disabled]="rejecting()">
+
+              Cancelar
+
+            </button>
+
+            <button
+              type="button"
+              class="danger"
+              (click)="rejectPayment()"
+              [disabled]="
+                rejecting()
+                || !rejectionReason().trim()
+              ">
+
+              {{
+                rejecting()
+                  ? 'Rechazando...'
+                  : 'Confirmar rechazo'
+              }}
+
+            </button>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    }
   `,
 
   styles: [`
@@ -396,6 +548,11 @@ import {
     .paid {
       color: #166534;
       background: #dcfce7;
+    }
+
+    .rejected {
+      color: #991b1b;
+      background: #fee2e2;
     }
 
     .economic-grid {
@@ -457,6 +614,15 @@ import {
     .secondary {
       color: #0f766e;
       background: #ccfbf1;
+    }
+
+    .danger {
+      color: white;
+      background: #dc2626;
+    }
+
+    .danger:hover {
+      background: #b91c1c;
     }
 
     .preview {
@@ -568,6 +734,43 @@ import {
       font-size: 25px;
     }
 
+    .rejection-field {
+      display: grid;
+      gap: 7px;
+      color: #334155;
+      font-weight: 900;
+    }
+
+    .rejection-field textarea {
+      box-sizing: border-box;
+      width: 100%;
+      resize: vertical;
+      border: 1px solid #cbd5e1;
+      border-radius: 13px;
+      padding: 12px;
+      font: inherit;
+      background: white;
+    }
+
+    .rejection-field small {
+      justify-self: end;
+      color: #64748b;
+    }
+
+    .rejected-box {
+      display: grid;
+      gap: 6px;
+      border-radius: 14px;
+      padding: 13px;
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
+    .rejected-box small {
+      color: #7f1d1d;
+      font-weight: 700;
+    }
+
     @media (max-width: 850px) {
 
       .payment-heading {
@@ -594,6 +797,7 @@ export class SpecialistManualPaymentComponent
   loading = signal(false);
   evidenceLoading = signal(false);
   confirming = signal(false);
+  rejecting = signal(false);
 
   errorMessage = signal('');
   successMessage = signal('');
@@ -601,6 +805,8 @@ export class SpecialistManualPaymentComponent
   previewUrl = signal<string | null>(null);
 
   confirmationOpen = signal(false);
+  rejectionOpen = signal(false);
+  rejectionReason = signal('');
 
   ngOnInit(): void {
     this.load();
@@ -811,6 +1017,107 @@ export class SpecialistManualPaymentComponent
       });
   }
 
+  openRejection(): void {
+
+    const current = this.payment();
+
+    if (
+      !current
+      || current.paymentStatus !== 'PENDING'
+    ) {
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.rejectionReason.set('');
+    this.rejectionOpen.set(true);
+  }
+
+  closeRejection(): void {
+
+    if (this.rejecting()) {
+      return;
+    }
+
+    this.rejectionOpen.set(false);
+    this.rejectionReason.set('');
+  }
+
+  onRejectionReasonInput(
+    event: Event
+  ): void {
+
+    const textarea =
+      event.target as HTMLTextAreaElement;
+
+    this.rejectionReason.set(
+      textarea.value.slice(0, 500)
+    );
+  }
+
+  rejectPayment(): void {
+
+    const current = this.payment();
+
+    const reason =
+      this.rejectionReason().trim();
+
+    if (
+      !current
+      || current.paymentStatus !== 'PENDING'
+    ) {
+      return;
+    }
+
+    if (!reason) {
+
+      this.errorMessage.set(
+        'Ingrese el motivo del rechazo.'
+      );
+
+      return;
+    }
+
+    this.rejecting.set(true);
+    this.errorMessage.set('');
+
+    this.paymentService
+      .reject(
+        this.requestId,
+        reason
+      )
+      .pipe(
+        finalize(
+          () => this.rejecting.set(false)
+        )
+      )
+      .subscribe({
+
+        next: (updated) => {
+
+          this.payment.set(updated);
+
+          this.rejectionOpen.set(false);
+          this.rejectionReason.set('');
+
+          this.successMessage.set(
+            'Pago rechazado correctamente. El paciente puede registrar una nueva evidencia.'
+          );
+        },
+
+        error: (error: unknown) => {
+
+          this.errorMessage.set(
+            this.extractErrorMessage(
+              error,
+              'No se pudo rechazar el pago.'
+            )
+          );
+        }
+      });
+  }
+
   methodLabel(
     value?: string | null
   ): string {
@@ -837,6 +1144,10 @@ export class SpecialistManualPaymentComponent
 
     if (value === 'PENDING') {
       return 'Pendiente de verificación';
+    }
+
+    if (value === 'REJECTED') {
+      return 'Pago rechazado';
     }
 
     return value ?? 'Sin pago';

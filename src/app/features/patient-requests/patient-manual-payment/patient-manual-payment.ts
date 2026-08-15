@@ -47,7 +47,8 @@ import {
           <b
             class="status"
             [class.pending]="current.paymentStatus === 'PENDING'"
-            [class.paid]="current.paymentStatus === 'PAID'">
+            [class.paid]="current.paymentStatus === 'PAID'"
+            [class.rejected]="current.paymentStatus === 'REJECTED'">
 
             {{ statusLabel(current.paymentStatus) }}
 
@@ -69,7 +70,9 @@ import {
             ? 'OCULTAR PAGO'
             : payment()?.paymentStatus === 'PAID'
               ? 'VER PAGO REALIZADO'
-              : 'VER PAGO'
+              : payment()?.paymentStatus === 'REJECTED'
+                ? 'CORREGIR PAGO RECHAZADO'
+                : 'VER PAGO'
         }}
       </button>
 <div
@@ -129,7 +132,13 @@ import {
           </article>
 
           <article class="total-card">
-            <span>Total pagado</span>
+            <span>
+              {{
+                current.paymentStatus === 'REJECTED'
+                  ? 'Total declarado'
+                  : 'Total pagado'
+              }}
+            </span>
 
             <strong>
               S/
@@ -188,6 +197,18 @@ import {
             </span>
           }
 
+          @if (current.rejectedAt) {
+            <span>
+              Rechazada:
+              <b>
+                {{
+                  current.rejectedAt
+                    | date:'dd/MM/yyyy HH:mm'
+                }}
+              </b>
+            </span>
+          }
+
         </div>
 
         @if (current.paymentStatus === 'PENDING') {
@@ -201,6 +222,118 @@ import {
           <div class="success-box">
             Pago realizado y confirmado por el especialista.
           </div>
+        }
+
+        @if (current.paymentStatus === 'REJECTED') {
+
+          <div class="rejected-box">
+
+            <b>
+              El especialista rechazó este pago.
+            </b>
+
+            @if (current.rejectionReason) {
+              <span>
+                Motivo:
+                <strong>
+                  {{ current.rejectionReason }}
+                </strong>
+              </span>
+            }
+
+            <small>
+              Revise la información y registre una nueva
+              evidencia. El intento anterior permanece
+              conservado para trazabilidad.
+            </small>
+
+          </div>
+
+          <div class="resubmission-title">
+
+            <span>
+              Corregir pago
+            </span>
+
+            <strong>
+              Registrar nueva evidencia
+            </strong>
+
+          </div>
+
+          <div class="payment-form">
+
+            <label>
+              Método utilizado
+
+              <select [(ngModel)]="paymentMethod">
+
+                <option value="YAPE">
+                  Yape
+                </option>
+
+                <option value="PLIN">
+                  Plin
+                </option>
+
+                <option value="TRANSFER">
+                  Transferencia bancaria
+                </option>
+
+                <option value="CASH">
+                  Efectivo
+                </option>
+
+              </select>
+            </label>
+
+            <label>
+              Número de operación / referencia
+
+              <input
+                type="text"
+                maxlength="120"
+                [(ngModel)]="externalTransactionId"
+                placeholder="Nueva operación o referencia"
+              />
+            </label>
+
+            <label class="evidence-field">
+              Nueva evidencia del pago
+
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                (change)="selectEvidence($event)"
+              />
+
+              <small>
+                JPG, PNG o WEBP. Máximo 5 MB.
+              </small>
+
+              @if (selectedFileName()) {
+                <b>
+                  {{ selectedFileName() }}
+                </b>
+              }
+
+            </label>
+
+            <button
+              type="button"
+              (click)="register()"
+              [disabled]="saving() || !selectedFileName()">
+
+              {{
+                saving()
+                  ? 'Registrando nueva evidencia...'
+                  : 'Registrar nueva evidencia'
+              }}
+
+            </button>
+
+          </div>
+
         }
 
       } @else {
@@ -363,6 +496,11 @@ import {
       background: #dcfce7;
     }
 
+    .rejected {
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
     .economic-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -488,6 +626,43 @@ import {
     .pending-box {
       color: #92400e;
       background: #fef3c7;
+    }
+
+    .rejected-box {
+      display: grid;
+      gap: 7px;
+      border-radius: 14px;
+      padding: 14px;
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
+    .rejected-box strong {
+      color: #7f1d1d;
+    }
+
+    .rejected-box small {
+      color: #7f1d1d;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .resubmission-title {
+      display: grid;
+      gap: 4px;
+      border-left: 4px solid #0f766e;
+      padding: 8px 12px;
+    }
+
+    .resubmission-title span {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .resubmission-title strong {
+      color: #0f766e;
     }
 
     @media (max-width: 850px) {
@@ -676,7 +851,12 @@ export class PatientManualPaymentComponent
       .subscribe({
 
         next: (payment) => {
+
           this.payment.set(payment);
+
+          if (payment.paymentStatus === 'REJECTED') {
+            this.paymentDetailsExpanded.set(true);
+          }
         },
 
         error: (error: unknown) => {
@@ -787,6 +967,8 @@ export class PatientManualPaymentComponent
           this.successMessage.set(
             'Pago registrado. Queda pendiente de verificación por el especialista.'
           );
+
+          this.paymentDetailsExpanded.set(true);
         },
 
         error: (error: unknown) => {
@@ -827,6 +1009,10 @@ export class PatientManualPaymentComponent
 
     if (value === 'PENDING') {
       return 'Pendiente de verificación';
+    }
+
+    if (value === 'REJECTED') {
+      return 'Pago rechazado';
     }
 
     return value ?? 'Sin pago';

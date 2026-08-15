@@ -56,4 +56,20 @@ export class SpecialistManualPaymentService {
       }
     );
   }
+
+  reject(
+    requestId: number,
+    reason: string
+  ): Observable<ManualPayment> {
+
+    return this.http.patch<ManualPayment>(
+      this.baseUrl
+      + '/'
+      + requestId
+      + '/payment/reject',
+      {
+        reason: reason.trim()
+      }
+    );
+  }
 }

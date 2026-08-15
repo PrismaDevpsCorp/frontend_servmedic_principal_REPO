@@ -35,6 +35,9 @@ export interface ManualPayment {
   paidAt?: string | null;
   verifiedAt?: string | null;
 
+  rejectedAt?: string | null;
+  rejectionReason?: string | null;
+
   verificationWarningAcknowledged: boolean;
 
   message?: string | null;

@@ -168,7 +168,7 @@ import {
 
       } @else {
 
-        <div class="ledger-wrap">
+        <div class="ledger-wrap responsive-mobile-card-table responsive-financial-ledger-table">
 
           <table>
             <thead>
@@ -195,17 +195,17 @@ import {
 
                 <tr>
 
-                  <td>
+                  <td data-label="Solicitud">
                     <strong>{{ operation.requestCode }}</strong>
                     <small>#{{ operation.medicalRequestId }}</small>
                   </td>
 
-                  <td>
+                  <td data-label="Paciente / servicio">
                     <strong>{{ operation.patientFullName }}</strong>
                     <small>{{ operation.serviceName }}</small>
                   </td>
 
-                  <td>
+                  <td data-label="Estado">
                     <span
                       class="payment-status"
                       [class.paid]="operation.paymentStatus === 'PAID'"
@@ -216,27 +216,27 @@ import {
                     </span>
                   </td>
 
-                  <td>
+                  <td data-label="Base">
                     S/
                     {{ operation.serviceAmount | number:'1.2-2' }}
                   </td>
 
-                  <td>
+                  <td data-label="Movilidad">
                     S/
                     {{ operation.mobilityAmount | number:'1.2-2' }}
                   </td>
 
-                  <td>
+                  <td data-label="Adicionales">
                     S/
                     {{ operation.additionalAmount | number:'1.2-2' }}
                   </td>
 
-                  <td class="money-strong">
+                  <td data-label="Total" class="money-strong">
                     S/
                     {{ operation.totalAmount | number:'1.2-2' }}
                   </td>
 
-                  <td>
+                  <td data-label="Comisión">
                     @if (operation.paymentStatus === 'PAID') {
                       S/
                       {{
@@ -250,7 +250,7 @@ import {
                     }
                   </td>
 
-                  <td>
+                  <td data-label="Neto">
                     @if (operation.paymentStatus === 'PAID') {
                       <strong>
                         S/
@@ -266,7 +266,7 @@ import {
                     }
                   </td>
 
-                  <td>
+                  <td data-label="Pago">
                     <strong>
                       {{ paymentMethodLabel(operation.paymentMethod) }}
                     </strong>
@@ -571,21 +571,55 @@ import {
 
     @media (max-width: 760px) {
       .financial-panel {
+        min-width: 0;
         padding: 16px;
       }
 
       .financial-heading,
       .ledger-heading {
+        min-width: 0;
         flex-direction: column;
+      }
+
+      .financial-heading button {
+        width: 100%;
       }
 
       .financial-kpis,
       .financial-breakdown {
+        min-width: 0;
         grid-template-columns: 1fr;
       }
 
+      .ledger-wrap.responsive-mobile-card-table {
+        overflow-x: visible;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .responsive-financial-ledger-table table {
+        width: 100%;
+        min-width: 0;
+      }
+
       .pagination {
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        width: 100%;
+        gap: 8px;
+      }
+
+      .pagination button {
+        width: 100%;
+        min-width: 0;
+        padding: 10px 8px;
+      }
+
+      .pagination span {
+        align-self: center;
+        text-align: center;
+        white-space: nowrap;
+        font-size: 12px;
       }
     }
   `]

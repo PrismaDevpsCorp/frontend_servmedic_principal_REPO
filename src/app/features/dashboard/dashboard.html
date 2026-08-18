@@ -66,7 +66,7 @@
     @if (latestRequests().length === 0) {
       <div class="empty-state">Aun no hay solicitudes para mostrar.</div>
     } @else {
-      <div class="table-wrap">
+      <div class="table-wrap responsive-mobile-card-table responsive-dashboard-latest-table">
         <table>
           <thead>
             <tr>
@@ -83,20 +83,20 @@
           <tbody>
             @for (request of latestRequests(); track request.id) {
               <tr>
-                <td>
+                <td data-label="Código">
                   <strong>{{ request.requestCode }}</strong>
                   <small>{{ request.addressText }}</small>
                 </td>
-                <td>{{ request.patientFullName }}</td>
-                <td>{{ request.serviceName }}</td>
-                <td>
+                <td data-label="Paciente">{{ request.patientFullName }}</td>
+                <td data-label="Servicio">{{ request.serviceName }}</td>
+                <td data-label="Estado">
                   <span class="status-badge" [ngClass]="statusClass(request.status)">
                     {{ statusLabel(request.status) }}
                   </span>
                 </td>
-                <td>S/{{ request.estimatedAmount | number:'1.2-2' }}</td>
-                <td>{{ request.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td>
+                <td data-label="Monto">S/{{ request.estimatedAmount | number:'1.2-2' }}</td>
+                <td data-label="Fecha">{{ request.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td data-label="Ficha">
                   @if (request.status === 'FINALIZADO') {
                     <a class="report-link" [routerLink]="['/attention-report', request.id]">
                       Abrir ficha

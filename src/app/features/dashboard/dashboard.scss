@@ -222,4 +222,18 @@ td small {
   .metrics-grid {
     grid-template-columns: 1fr;
   }
+
+  .table-wrap.responsive-mobile-card-table {
+    overflow-x: visible;
+  }
+
+  .responsive-dashboard-latest-table table {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .responsive-dashboard-latest-table .report-link {
+    max-width: 100%;
+    justify-content: center;
+  }
 }

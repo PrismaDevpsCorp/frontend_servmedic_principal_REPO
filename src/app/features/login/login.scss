@@ -196,3 +196,30 @@ button:disabled {
   background: linear-gradient(135deg, #0f766e, #14b8a6, #2563eb);
   box-shadow: 0 12px 26px rgba(20, 184, 166, 0.24);
 }
+/* B42.5 REGISTRATION CTA */
+
+.register-cta {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #dbe5ee;
+  display: grid;
+  gap: 10px;
+  text-align: center;
+}
+
+.register-cta > span {
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.register-cta .register-button {
+  border: 1px solid #99d8ce;
+  background: #ecfdf5;
+  color: #0f766e;
+  box-shadow: none;
+}
+
+.register-cta .register-button:hover {
+  background: #d1fae5;
+}

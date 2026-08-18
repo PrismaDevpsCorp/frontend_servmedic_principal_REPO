@@ -1,0 +1,470 @@
+<section class="register-page">
+  <div class="register-shell">
+
+    <header class="register-header">
+      <div>
+        <p class="eyebrow">
+          MedicDrive Plus
+        </p>
+
+        <h1>Crear una cuenta</h1>
+
+        <p>
+          Regístrese para acceder al portal de servicios médicos
+          como paciente o especialista.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="link-button"
+        (click)="goToLogin()">
+        Ya tengo una cuenta
+      </button>
+    </header>
+
+    <div class="type-selector">
+      <button
+        type="button"
+        [class.active]="isPatient"
+        (click)="selectType('PACIENTE')">
+        <strong>Soy paciente</strong>
+        <span>Solicitar atención médica</span>
+      </button>
+
+      <button
+        type="button"
+        [class.active]="isSpecialist"
+        (click)="selectType('ESPECIALISTA')">
+        <strong>Soy especialista</strong>
+        <span>Brindar servicios profesionales</span>
+      </button>
+    </div>
+
+    <div
+      class="success-card"
+      *ngIf="successMessage">
+
+      <div class="success-icon">
+        ✓
+      </div>
+
+      <h2>Registro recibido</h2>
+
+      <p>
+        {{ successMessage }}
+      </p>
+
+      <p
+        *ngIf="isSpecialist"
+        class="validation-note">
+        Su perfil profesional debe ser revisado por
+        MedicDrive antes de habilitar el acceso operativo.
+      </p>
+
+      <p
+        *ngIf="specialistStatus">
+        Estado:
+        <strong>
+          {{ specialistStatus }}
+        </strong>
+      </p>
+
+      <button
+        type="button"
+        class="primary-button"
+        (click)="goToLogin()">
+        Ir a iniciar sesión
+      </button>
+    </div>
+
+    <form
+      *ngIf="!successMessage"
+      (ngSubmit)="submit()">
+
+      <section class="form-card">
+        <div class="section-title">
+          <span>1</span>
+
+          <div>
+            <h2>Acceso a la cuenta</h2>
+            <p>
+              El correo será utilizado como identificador de acceso.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="wide">
+            Correo electrónico
+            <input
+              type="email"
+              name="email"
+              [(ngModel)]="email"
+              autocomplete="email"
+              placeholder="nombre@correo.com"
+              required>
+          </label>
+
+          <label>
+            Contraseña
+            <input
+              type="password"
+              name="password"
+              [(ngModel)]="password"
+              autocomplete="new-password"
+              placeholder="Mínimo 8 caracteres"
+              required>
+          </label>
+
+          <label>
+            Confirmar contraseña
+            <input
+              type="password"
+              name="confirmPassword"
+              [(ngModel)]="confirmPassword"
+              autocomplete="new-password"
+              required>
+          </label>
+        </div>
+
+        <p class="helper">
+          Debe contener mayúscula, minúscula y número.
+          La contraseña se almacena protegida mediante hash BCrypt.
+        </p>
+      </section>
+
+      <section class="form-card">
+        <div class="section-title">
+          <span>2</span>
+
+          <div>
+            <h2>Datos personales</h2>
+            <p>
+              Información básica de identificación y contacto.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            Nombres
+            <input
+              type="text"
+              name="firstName"
+              [(ngModel)]="firstName"
+              autocomplete="given-name"
+              required>
+          </label>
+
+          <label>
+            Apellidos
+            <input
+              type="text"
+              name="lastName"
+              [(ngModel)]="lastName"
+              autocomplete="family-name"
+              required>
+          </label>
+
+          <label>
+            DNI
+            <input
+              type="text"
+              name="dni"
+              [(ngModel)]="dni"
+              maxlength="8"
+              inputmode="numeric"
+              placeholder="8 dígitos"
+              required>
+          </label>
+
+          <label>
+            Celular
+            <input
+              type="tel"
+              name="mobilePhone"
+              [(ngModel)]="mobilePhone"
+              autocomplete="tel">
+          </label>
+
+          <label>
+            Teléfono fijo
+            <input
+              type="tel"
+              name="landlinePhone"
+              [(ngModel)]="landlinePhone">
+          </label>
+        </div>
+      </section>
+
+      <section class="form-card">
+        <div class="section-title">
+          <span>3</span>
+
+          <div>
+            <h2>Dirección y ubicación</h2>
+            <p>
+              La dirección es ingresada manualmente.
+              La ubicación puede obtenerse desde el navegador.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="wide">
+            Dirección
+            <input
+              type="text"
+              name="addressText"
+              [(ngModel)]="addressText"
+              autocomplete="street-address"
+              placeholder="Av., Jr., calle, número, distrito..."
+              required>
+          </label>
+
+          <label class="wide">
+            Referencia
+            <input
+              type="text"
+              name="addressReference"
+              [(ngModel)]="addressReference"
+              placeholder="Referencia opcional">
+          </label>
+
+          <label>
+            Latitud
+            <input
+              type="number"
+              step="0.0000001"
+              min="-90"
+              max="90"
+              name="latitude"
+              [(ngModel)]="latitude">
+          </label>
+
+          <label>
+            Longitud
+            <input
+              type="number"
+              step="0.0000001"
+              min="-180"
+              max="180"
+              name="longitude"
+              [(ngModel)]="longitude">
+          </label>
+        </div>
+
+        <button
+          type="button"
+          class="location-button"
+          [disabled]="locating"
+          (click)="useCurrentLocation()">
+          {{
+            locating
+              ? 'Obteniendo ubicación...'
+              : 'Usar mi ubicación actual'
+          }}
+        </button>
+
+        <p
+          class="location-ready"
+          *ngIf="latitude !== null && longitude !== null">
+          Ubicación lista:
+          {{ latitude }},
+          {{ longitude }}
+        </p>
+      </section>
+
+      <section
+        class="form-card"
+        *ngIf="isPatient">
+
+        <div class="section-title">
+          <span>4</span>
+
+          <div>
+            <h2>Información de salud</h2>
+            <p>
+              Estos datos son opcionales y ayudan a contextualizar
+              futuras atenciones.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            Grupo sanguíneo
+            <input
+              type="text"
+              name="bloodType"
+              [(ngModel)]="bloodType"
+              placeholder="Ej. O+">
+          </label>
+
+          <label class="wide">
+            Alergias
+            <textarea
+              name="allergies"
+              [(ngModel)]="allergies"
+              rows="3"
+              placeholder="Alergias conocidas"></textarea>
+          </label>
+
+          <label class="wide">
+            Condiciones preexistentes
+            <textarea
+              name="preexistingConditions"
+              [(ngModel)]="preexistingConditions"
+              rows="3"
+              placeholder="Enfermedades o condiciones relevantes"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section
+        class="form-card"
+        *ngIf="isSpecialist">
+
+        <div class="section-title">
+          <span>4</span>
+
+          <div>
+            <h2>Información profesional</h2>
+            <p>
+              El registro quedará pendiente de validación administrativa.
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="catalog-state"
+          *ngIf="catalogLoading">
+          Cargando profesiones y servicios...
+        </div>
+
+        <div class="form-grid">
+          <label>
+            Profesión
+            <select
+              name="professionCode"
+              [(ngModel)]="professionCode"
+              (ngModelChange)="onProfessionChange()"
+              required>
+
+              <option value="">
+                Seleccione...
+              </option>
+
+              <option
+                *ngFor="let profession of professions"
+                [value]="profession.code">
+                {{ profession.name }}
+              </option>
+            </select>
+          </label>
+
+          <label>
+            Número de colegiatura
+            <input
+              type="text"
+              name="collegeNumber"
+              [(ngModel)]="collegeNumber"
+              placeholder="Número de colegiatura"
+              required>
+          </label>
+        </div>
+
+        <div
+          class="services-section"
+          *ngIf="professionCode">
+
+          <h3>Servicios que brindará</h3>
+
+          <p>
+            Solo se muestran servicios correspondientes
+            a la profesión seleccionada.
+          </p>
+
+          <div
+            class="services-grid"
+            *ngIf="availableServices.length > 0">
+
+            <label
+              class="service-option"
+              *ngFor="let service of availableServices">
+
+              <input
+                type="checkbox"
+                [checked]="isServiceSelected(service.code)"
+                (change)="toggleService(
+                  service.code,
+                  $any($event.target).checked
+                )">
+
+              <span>
+                <strong>
+                  {{ service.name }}
+                </strong>
+
+                <small *ngIf="service.description">
+                  {{ service.description }}
+                </small>
+              </span>
+            </label>
+          </div>
+
+          <div
+            class="catalog-state"
+            *ngIf="availableServices.length === 0">
+            No hay servicios activos disponibles
+            para la profesión seleccionada.
+          </div>
+        </div>
+
+        <div class="professional-notice">
+          <strong>
+            Validación profesional
+          </strong>
+
+          <p>
+            Al completar el registro, el perfil quedará como
+            PENDING_VALIDATION. La administración de MedicDrive
+            deberá validar y habilitar al especialista antes
+            de que pueda operar en la plataforma.
+          </p>
+        </div>
+      </section>
+
+      <div
+        class="error-message"
+        *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="goToLogin()">
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="loading">
+          {{
+            loading
+              ? 'Creando cuenta...'
+              : (
+                  isPatient
+                    ? 'Crear cuenta de paciente'
+                    : 'Enviar registro de especialista'
+                )
+          }}
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

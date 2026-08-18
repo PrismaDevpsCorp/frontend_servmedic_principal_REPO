@@ -6,6 +6,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+
 import {
   AuthService,
   LoginAccessType
@@ -68,13 +69,6 @@ export class Login {
   ): void {
     this.accessType = type;
     this.errorMessage.set('');
-
-    if (type === 'PACIENTE') {
-      this.username = '';
-      this.password = '';
-      return;
-    }
-
     this.username = '';
     this.password = '';
   }
@@ -87,7 +81,7 @@ export class Login {
       || !this.password
     ) {
       this.errorMessage.set(
-        'Ingrese usuario y contrasena.'
+        'Ingrese usuario y contraseña.'
       );
 
       return;
@@ -109,14 +103,36 @@ export class Login {
             this.authService.homeRoute()
           ]);
         },
-        error: () => {
+        error: (error) => {
           this.loading.set(false);
 
+          if (
+            error?.status === 403
+            && this.accessType === 'ESPECIALISTA'
+          ) {
+            this.errorMessage.set(
+              'Su perfil profesional aún no está habilitado para operar. Revise el estado de validación con MedicDrive.'
+            );
+
+            return;
+          }
+
           this.errorMessage.set(
-            'Credenciales invalidas o usuario no autorizado para el perfil seleccionado.'
+            'Credenciales inválidas o usuario no autorizado para el perfil seleccionado.'
           );
         }
       });
+  }
+
+  goToRegister(): void {
+    this.router.navigate(
+      ['/register'],
+      {
+        queryParams: {
+          type: this.accessType
+        }
+      }
+    );
   }
 
   accessTitle(): string {
@@ -127,7 +143,7 @@ export class Login {
 
   accessDescription(): string {
     return this.accessType === 'PACIENTE'
-      ? 'Solicite servicios medicos y revise su historial de atenciones.'
-      : 'Gestione solicitudes, fichas medicas e historial operativo.';
+      ? 'Solicite servicios médicos y revise su historial de atenciones.'
+      : 'Gestione solicitudes, fichas médicas e historial operativo.';
   }
 }

@@ -2,10 +2,19 @@
   <div class="login-shell">
     <div class="brand-panel">
       <div class="brand-mark">MD</div>
-      <p class="eyebrow">MedicDrive CORE Servicios</p>
-      <h1>Portal operativo para pacientes y especialistas</h1>
+
+      <p class="eyebrow">
+        MedicDrive CORE Servicios
+      </p>
+
+      <h1>
+        Portal operativo para pacientes y especialistas
+      </h1>
+
       <p class="brand-copy">
-        Solicite servicios medicos, gestione atenciones, revise fichas medicas, historial operativo y seguimiento desde un unico portal profesional.
+        Solicite servicios médicos, gestione atenciones,
+        revise fichas médicas, historial operativo y
+        seguimiento desde un único portal profesional.
       </p>
 
       <div class="status-card">
@@ -15,24 +24,28 @@
     </div>
 
     <div class="login-card">
-      <p class="eyebrow">{{ accessTitle() }}</p>
-      <h2>Iniciar sesion</h2>
-      <p class="muted">{{ accessDescription() }}</p>
+      <p class="eyebrow">
+        {{ accessTitle() }}
+      </p>
+
+      <h2>Iniciar sesión</h2>
+
+      <p class="muted">
+        {{ accessDescription() }}
+      </p>
 
       <div class="access-switch">
         <button
           type="button"
           [class.active]="accessType === 'ESPECIALISTA'"
-          (click)="selectAccessType('ESPECIALISTA')"
-        >
+          (click)="selectAccessType('ESPECIALISTA')">
           Especialista
         </button>
 
         <button
           type="button"
           [class.active]="accessType === 'PACIENTE'"
-          (click)="selectAccessType('PACIENTE')"
-        >
+          (click)="selectAccessType('PACIENTE')">
           Paciente
         </button>
       </div>
@@ -40,34 +53,59 @@
       <form (ngSubmit)="login()">
         <label>
           Usuario o correo
+
           <input
             type="text"
             name="username"
             [(ngModel)]="username"
             autocomplete="username"
-            placeholder="correo@medicdrive.com"
-          />
+            placeholder="correo@medicdrive.com">
         </label>
 
         <label>
-          Contrasena
+          Contraseña
+
           <input
             type="password"
             name="password"
             [(ngModel)]="password"
             autocomplete="current-password"
-            placeholder="Ingrese su contrasena"
-          />
+            placeholder="Ingrese su contraseña">
         </label>
 
         @if (errorMessage()) {
-          <div class="error-message">{{ errorMessage() }}</div>
+          <div class="error-message">
+            {{ errorMessage() }}
+          </div>
         }
 
-        <button type="submit" [disabled]="loading()">
-          {{ loading() ? 'Validando...' : 'Entrar al portal' }}
+        <button
+          type="submit"
+          [disabled]="loading()">
+          {{
+            loading()
+              ? 'Validando...'
+              : 'Entrar al portal'
+          }}
         </button>
       </form>
+
+      <div class="register-cta">
+        <span>
+          ¿Aún no tiene cuenta?
+        </span>
+
+        <button
+          type="button"
+          class="register-button"
+          (click)="goToRegister()">
+          {{
+            accessType === 'PACIENTE'
+              ? 'Crear cuenta como paciente'
+              : 'Registrarme como especialista'
+          }}
+        </button>
+      </div>
     </div>
   </div>
 </section>

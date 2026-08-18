@@ -5,10 +5,11 @@ import { catchError, forkJoin, of } from 'rxjs';
 import { MedicalRequest } from '../../core/models/medical-request.model';
 import { AttentionReportService } from '../../core/services/attention-report.service';
 import { SpecialistMedicalRequestService } from '../../core/services/specialist-medical-request.service';
+import { SpecialistFinancialDashboard } from '../specialist-financial-dashboard/specialist-financial-dashboard';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, RouterLink, DatePipe],
+  imports: [CommonModule, RouterLink, DatePipe, SpecialistFinancialDashboard],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })

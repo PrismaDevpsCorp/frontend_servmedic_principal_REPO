@@ -1,0 +1,136 @@
+.register-location-map-card {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.map-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.map-heading > div {
+  display: grid;
+  gap: 5px;
+}
+
+.map-heading strong {
+  color: #0f172a;
+  font-size: 15px;
+}
+
+.map-heading span {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.current-location-button {
+  flex: 0 0 auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 13px;
+  padding: 12px 16px;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.current-location-button:hover:not(:disabled) {
+  border-color: #14b8a6;
+  color: #0f766e;
+  background: #ecfdf5;
+}
+
+.current-location-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.map-frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #d8e3ee;
+  border-radius: 18px;
+  background: #e2e8f0;
+  min-height: 360px;
+}
+
+.map-container {
+  width: 100%;
+  height: 360px;
+}
+
+.map-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(248, 250, 252, 0.92);
+  color: #475569;
+  text-align: center;
+}
+
+.approximate-address {
+  display: grid;
+  gap: 5px;
+  padding: 15px 16px;
+  border: 1px solid rgba(14, 116, 144, 0.12);
+  border-radius: 15px;
+  background: #f0fdfa;
+}
+
+.approximate-address span {
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.approximate-address strong {
+  color: #134e4a;
+  line-height: 1.5;
+}
+
+.approximate-address small {
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.map-help {
+  display: grid;
+  gap: 4px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.map-help strong {
+  color: #334155;
+}
+
+.map-help span {
+  line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+
+  .map-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .current-location-button {
+    width: 100%;
+  }
+
+  .map-frame,
+  .map-container {
+    min-height: 300px;
+    height: 300px;
+  }
+}

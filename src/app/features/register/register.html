@@ -199,21 +199,32 @@
       </section>
 
       <section class="form-card">
+
         <div class="section-title">
+
           <span>3</span>
 
           <div>
-            <h2>Dirección y ubicación</h2>
+
+            <h2>
+              Dirección y ubicación
+            </h2>
+
             <p>
-              La dirección es ingresada manualmente.
-              La ubicación puede obtenerse desde el navegador.
+              Ingrese su dirección y referencia manualmente
+              y marque en el mapa la ubicación correspondiente.
             </p>
+
           </div>
+
         </div>
 
         <div class="form-grid">
+
           <label class="wide">
+
             Dirección
+
             <input
               type="text"
               name="addressText"
@@ -221,61 +232,42 @@
               autocomplete="street-address"
               placeholder="Av., Jr., calle, número, distrito..."
               required>
+
           </label>
 
           <label class="wide">
+
             Referencia
+
             <input
               type="text"
               name="addressReference"
               [(ngModel)]="addressReference"
-              placeholder="Referencia opcional">
+              placeholder="Ej. Frente al parque, puerta azul, segundo piso..."
+              required>
+
           </label>
 
-          <label>
-            Latitud
-            <input
-              type="number"
-              step="0.0000001"
-              min="-90"
-              max="90"
-              name="latitude"
-              [(ngModel)]="latitude">
-          </label>
-
-          <label>
-            Longitud
-            <input
-              type="number"
-              step="0.0000001"
-              min="-180"
-              max="180"
-              name="longitude"
-              [(ngModel)]="longitude">
-          </label>
         </div>
 
-        <button
-          type="button"
-          class="location-button"
-          [disabled]="locating"
-          (click)="useCurrentLocation()">
-          {{
-            locating
-              ? 'Obteniendo ubicación...'
-              : 'Usar mi ubicación actual'
-          }}
-        </button>
+        <p class="address-map-warning">
+          Asegúrese de que la ubicación y dirección mostradas en el mapa
+          correspondan con la Dirección y Referencia que está ingresando.
+          Esta advertencia es informativa y no realiza una validación
+          automática entre ambos datos.
+        </p>
+
+        <app-register-location-map
+          (locationChange)="onLocationChange($event)">
+        </app-register-location-map>
 
         <p
           class="location-ready"
           *ngIf="latitude !== null && longitude !== null">
-          Ubicación lista:
-          {{ latitude }},
-          {{ longitude }}
+          ✓ Ubicación seleccionada correctamente en el mapa.
         </p>
-      </section>
 
+      </section>
       <section
         class="form-card"
         *ngIf="isPatient">

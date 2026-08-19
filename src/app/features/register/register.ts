@@ -26,6 +26,10 @@ import {
 import {
   MedicalServiceOption
 } from '../../core/models/medical-service.model';
+import {
+  RegisterLocationMap,
+  RegisterMapLocation
+} from './register-location-map/register-location-map';
 
 export type RegistrationType =
   'PACIENTE' | 'ESPECIALISTA';
@@ -35,7 +39,8 @@ export type RegistrationType =
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    RegisterLocationMap
   ],
   templateUrl: './register.html',
   styleUrl: './register.scss'
@@ -88,7 +93,6 @@ export class Register implements OnInit {
   services: MedicalServiceOption[] = [];
 
   loading = false;
-  locating = false;
   catalogLoading = false;
 
   errorMessage = '';
@@ -193,49 +197,17 @@ export class Register implements OnInit {
     );
   }
 
-  useCurrentLocation(): void {
+  onLocationChange(
+    location: RegisterMapLocation
+  ): void {
+
+    this.latitude =
+      location.latitude;
+
+    this.longitude =
+      location.longitude;
+
     this.errorMessage = '';
-
-    if (!navigator.geolocation) {
-      this.errorMessage =
-        'El navegador no permite obtener la ubicación actual.';
-      return;
-    }
-
-    this.locating = true;
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        this.latitude =
-          Number(
-            position.coords.latitude.toFixed(7)
-          );
-
-        this.longitude =
-          Number(
-            position.coords.longitude.toFixed(7)
-          );
-
-        this.locating = false;
-
-        this.changeDetectorRef
-          .detectChanges();
-      },
-      () => {
-        this.locating = false;
-
-        this.errorMessage =
-          'No fue posible obtener la ubicación. Puede ingresar las coordenadas manualmente.';
-
-        this.changeDetectorRef
-          .detectChanges();
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 30000
-      }
-    );
   }
 
   submit(): void {
@@ -465,12 +437,15 @@ export class Register implements OnInit {
     if (!this.addressText.trim()) {
       return 'Ingrese la dirección de residencia.';
     }
+    if (!this.addressReference.trim()) {
+      return 'Ingrese una referencia para ubicar su domicilio.';
+    }
 
     if (
       this.latitude === null
       || this.longitude === null
     ) {
-      return 'Obtenga su ubicación actual o ingrese las coordenadas.';
+      return 'Seleccione su ubicación en el mapa o use su ubicación actual.';
     }
 
     if (

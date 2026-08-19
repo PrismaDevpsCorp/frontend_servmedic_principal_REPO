@@ -1,0 +1,103 @@
+<section class="register-location-map-card">
+
+  <div class="map-heading">
+
+    <div>
+
+      <strong>
+        Ubicación de residencia
+      </strong>
+
+      <span>
+        Seleccione en el mapa el punto que corresponde a su domicilio.
+      </span>
+
+    </div>
+
+    <button
+      type="button"
+      class="current-location-button"
+      (click)="useCurrentLocation()"
+      [disabled]="locating()">
+
+      {{
+        locating()
+          ? 'Obteniendo ubicación...'
+          : 'Usar mi ubicación actual'
+      }}
+
+    </button>
+
+  </div>
+
+  <div class="map-frame">
+
+    <div
+      #mapContainer
+      class="map-container">
+    </div>
+
+    @if (statusMessage()) {
+
+      <div class="map-placeholder">
+
+        <strong>
+          {{ statusMessage() }}
+        </strong>
+
+      </div>
+
+    }
+
+  </div>
+
+  <div
+    class="approximate-address"
+    aria-live="polite">
+
+    <span>
+      Dirección aproximada mostrada por el mapa
+    </span>
+
+    @if (reverseGeocodingLoading()) {
+
+      <strong>
+        Consultando referencia del mapa...
+      </strong>
+
+    } @else if (approximateAddress()) {
+
+      <strong>
+        {{ approximateAddress() }}
+      </strong>
+
+    } @else {
+
+      <strong>
+        Seleccione un punto en el mapa.
+      </strong>
+
+    }
+
+    <small>
+      Esta información es únicamente una referencia visual temporal.
+      No autocompleta ni reemplaza la Dirección y Referencia
+      que usted registra manualmente.
+    </small>
+
+  </div>
+
+  <div class="map-help">
+
+    <strong>
+      {{ helperMessage() }}
+    </strong>
+
+    <span>
+      También puede hacer clic sobre el mapa o arrastrar el marcador
+      hasta la ubicación correcta.
+    </span>
+
+  </div>
+
+</section>

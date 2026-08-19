@@ -381,3 +381,27 @@ button:disabled {
     width: 100%;
   }
 }
+/* MEDICDRIVE VQA-HF1 REGISTER MAP */
+
+app-register-location-map {
+  display: block;
+  margin-top: 18px;
+}
+
+.address-map-warning {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-left: 4px solid #dc2626;
+  border-radius: 10px;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.location-ready {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

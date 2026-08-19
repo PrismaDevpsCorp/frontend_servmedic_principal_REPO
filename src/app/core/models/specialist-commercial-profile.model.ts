@@ -21,6 +21,19 @@ export interface SpecialistPaymentMethod {
   selected: boolean;
 }
 
+export interface SpecialistPaymentSetting {
+  paymentMethodId: number;
+  code: string;
+  name: string;
+  requiresVoucher: boolean;
+  selected: boolean;
+  mobilePhone: string | null;
+  accountHolder: string | null;
+  bankName: string | null;
+  accountNumber: string | null;
+  cci: string | null;
+}
+
 export interface SpecialistCommercialProfile {
   specialistProfileId: number;
   professionCode: string;
@@ -46,4 +59,14 @@ export interface UpdateSpecialistCommercialProfileRequest {
   active: boolean;
   services: UpdateSpecialistServicePriceRequest[];
   paymentMethodCodes: string[];
+}
+
+export interface UpdateSpecialistPaymentSettingRequest {
+  code: string;
+  selected: boolean;
+  mobilePhone: string | null;
+  accountHolder: string | null;
+  bankName: string | null;
+  accountNumber: string | null;
+  cci: string | null;
 }

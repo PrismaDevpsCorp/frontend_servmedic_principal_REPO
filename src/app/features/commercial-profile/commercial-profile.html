@@ -1,23 +1,28 @@
 <section class="commercial-profile-page">
-  <div class="page-heading">
+  <header class="page-heading">
     <div>
-      <p>Configuración comercial</p>
-      <h2>Perfil comercial del especialista</h2>
+      <p>Perfil comercial</p>
+
+      <h2>
+        Servicios, tarifas y cobranza
+      </h2>
+
       <span>
-        Configure sus servicios, precios, movilidad y métodos de pago
-        para las atenciones de MedicDrive.
+        Administre los servicios permitidos para su profesión,
+        sus precios base y los medios donde recibirá directamente
+        el pago del paciente.
       </span>
     </div>
 
     <button
       type="button"
       class="secondary-button"
-      (click)="loadProfile()"
       [disabled]="loading() || saving()"
+      (click)="loadProfile()"
     >
-      {{ loading() ? 'Actualizando...' : 'Recargar datos' }}
+      {{ loading() ? 'Actualizando...' : 'Actualizar' }}
     </button>
-  </div>
+  </header>
 
   @if (errorMessage()) {
     <div class="message error-message">
@@ -32,238 +37,261 @@
   }
 
   @if (loading()) {
-    <section class="loading-card">
-      <div class="loading-spinner"></div>
-      <div>
-        <strong>Cargando perfil comercial</strong>
-        <span>Consultando la configuración registrada en MedicDrive.</span>
-      </div>
-    </section>
+    <div class="loading-card">
+      Cargando perfil comercial...
+    </div>
   } @else {
+
+    <div class="summary-grid">
+      <article>
+        <span>Profesión</span>
+
+        <strong>
+          {{ professionName }}
+        </strong>
+
+        <small>
+          {{ professionCode }}
+        </small>
+      </article>
+
+      <article>
+        <span>Servicios habilitados</span>
+
+        <strong>
+          {{ activeServiceCount() }}
+          /
+          {{ services().length }}
+        </strong>
+
+        <small>
+          Catálogo correspondiente a su profesión
+        </small>
+      </article>
+
+      <article>
+        <span>Medios de pago</span>
+
+        <strong>
+          {{ selectedPaymentMethodCount() }}
+          /
+          {{ paymentMethods().length }}
+        </strong>
+
+        <small>
+          Actualmente habilitados
+        </small>
+      </article>
+
+      <article>
+        <span>Movilidad</span>
+
+        <strong>
+          {{ mobilityLabel() }}
+        </strong>
+
+        <small>
+          Configuración de desplazamiento
+        </small>
+      </article>
+    </div>
+
     <form
       class="commercial-form"
       (ngSubmit)="saveProfile()"
     >
-      <section class="summary-card">
-        <div class="profession-mark">
-          {{ professionCode.slice(0, 2) || 'MD' }}
-        </div>
 
-        <div class="profession-data">
-          <small>Profesión registrada</small>
-          <h3>{{ professionName || 'Especialista MedicDrive' }}</h3>
-          <span>
-            Código {{ professionCode || 'SIN CÓDIGO' }}
-            · Perfil #{{ specialistProfileId }}
-          </span>
-        </div>
-
-        <label class="profile-status">
-          <input
-            type="checkbox"
-            name="profileActive"
-            [(ngModel)]="active"
-            [disabled]="saving()"
-          />
-
-          <span>
-            <strong>Perfil comercial activo</strong>
-            <small>
-              Permite utilizar esta configuración en las operaciones.
-            </small>
-          </span>
-        </label>
-      </section>
-
-      <section class="form-card">
-        <div class="section-heading">
+      <section class="section-card">
+        <div class="section-title">
           <div>
-            <p>Servicios profesionales</p>
-            <h3>Precios base por servicio</h3>
-            <span>
-              {{ activeServiceCount() }} de
-              {{ services().length }} servicio(s) activo(s).
-            </span>
+            <p>Oferta profesional</p>
+
+            <h3>
+              Servicios que puede ofrecer
+            </h3>
           </div>
+
+          <span>
+            {{ activeServiceCount() }}
+            de
+            {{ services().length }}
+            habilitado(s)
+          </span>
+        </div>
+
+        <div class="information-note">
+          Estos servicios se cargan automáticamente según la profesión
+          <strong>{{ professionName }}</strong>.
+          Puede habilitar o deshabilitar individualmente cada servicio
+          y configurar su precio base. No puede ofrecer servicios
+          correspondientes a otra profesión.
         </div>
 
         @if (services().length === 0) {
           <div class="empty-state">
-            No existen servicios ofrecidos configurados para este
-            especialista.
+            No existen servicios configurados para su profesión.
           </div>
         } @else {
-          <div class="services-grid">
+
+          <div class="service-grid">
             @for (
               service of services();
               track service.offeredServiceId
             ) {
               <article
                 class="service-card"
-                [class.inactive-card]="!service.active"
+                [class.service-active]="service.active"
               >
-                <div class="service-heading">
-                  <div>
-                    <small>{{ service.serviceCode }}</small>
-                    <h4>{{ service.serviceName }}</h4>
-                  </div>
-
-                  <label class="switch-field">
+                <div class="service-header">
+                  <label class="switch-label">
                     <input
                       type="checkbox"
                       [name]="
-                        'serviceActive-' +
+                        'service-active-' +
                         service.offeredServiceId
                       "
                       [(ngModel)]="service.active"
-                      [disabled]="saving()"
                     />
+
                     <span>
-                      {{ service.active ? 'Activo' : 'Inactivo' }}
+                      {{
+                        service.active
+                          ? 'Habilitado'
+                          : 'Deshabilitado'
+                      }}
                     </span>
                   </label>
+
+                  @if (service.requiresPrescription) {
+                    <span class="prescription-badge">
+                      Requiere receta
+                    </span>
+                  }
                 </div>
 
-                @if (service.requiresPrescription) {
-                  <span class="prescription-badge">
-                    Requiere receta
-                  </span>
-                }
+                <div class="service-information">
+                  <strong>
+                    {{ service.serviceName }}
+                  </strong>
+
+                  <small>
+                    {{ service.serviceCode }}
+                  </small>
+                </div>
 
                 <label class="price-field">
-                  Precio base
+                  <span>
+                    Precio base de atención
+                  </span>
+
                   <div class="money-input">
-                    <span>S/</span>
+                    <b>S/</b>
+
                     <input
                       type="number"
                       min="0.01"
                       step="0.01"
                       [name]="
-                        'servicePrice-' +
+                        'service-price-' +
                         service.offeredServiceId
                       "
                       [(ngModel)]="service.basePrice"
-                      [disabled]="saving()"
-                      required
                     />
                   </div>
                 </label>
+
+                <small class="service-help">
+                  El precio se conserva aunque deshabilite
+                  temporalmente el servicio.
+                </small>
               </article>
             }
           </div>
         }
       </section>
 
-      <section class="form-card">
-        <div class="section-heading">
+      <section class="section-card">
+        <div class="section-title">
           <div>
             <p>Desplazamiento</p>
-            <h3>Política de movilidad</h3>
-            <span>
-              Defina cómo se considera la movilidad dentro del servicio.
-            </span>
+
+            <h3>
+              Política de movilidad
+            </h3>
           </div>
         </div>
 
-        <div class="mobility-grid">
-          <label
-            class="option-card"
-            [class.selected-option]="
-              mobilityPolicy === 'INCLUDED'
-            "
-          >
-            <input
-              type="radio"
-              name="mobilityPolicy"
-              value="INCLUDED"
-              [(ngModel)]="mobilityPolicy"
-              (ngModelChange)="onMobilityPolicyChange($event)"
-              [disabled]="saving()"
-            />
-            <strong>Incluida</strong>
+        <div class="form-grid">
+          <label>
             <span>
-              La movilidad forma parte del precio base.
+              Modalidad
             </span>
+
+            <select
+              name="mobilityPolicy"
+              [(ngModel)]="mobilityPolicy"
+            >
+              <option value="INCLUDED">
+                Movilidad incluida en el precio
+              </option>
+
+              <option value="SEPARATE">
+                Movilidad cobrada por separado
+              </option>
+
+              <option value="NOT_AVAILABLE">
+                No disponible para atención domiciliaria
+              </option>
+            </select>
           </label>
 
-          <label
-            class="option-card"
-            [class.selected-option]="
-              mobilityPolicy === 'SEPARATE'
-            "
-          >
-            <input
-              type="radio"
-              name="mobilityPolicy"
-              value="SEPARATE"
-              [(ngModel)]="mobilityPolicy"
-              (ngModelChange)="onMobilityPolicyChange($event)"
-              [disabled]="saving()"
-            />
-            <strong>Cobro separado</strong>
-            <span>
-              La movilidad se informa como un importe adicional.
-            </span>
-          </label>
+          @if (mobilityPolicy === 'SEPARATE') {
+            <label>
+              <span>
+                Monto referencial de movilidad
+              </span>
 
-          <label
-            class="option-card"
-            [class.selected-option]="
-              mobilityPolicy === 'NOT_AVAILABLE'
-            "
-          >
-            <input
-              type="radio"
-              name="mobilityPolicy"
-              value="NOT_AVAILABLE"
-              [(ngModel)]="mobilityPolicy"
-              (ngModelChange)="onMobilityPolicyChange($event)"
-              [disabled]="saving()"
-            />
-            <strong>No disponible</strong>
-            <span>
-              No se ofrece movilidad para la atención.
-            </span>
-          </label>
+              <div class="money-input">
+                <b>S/</b>
+
+                <input
+                  type="number"
+                  name="mobilityReferenceAmount"
+                  min="0.01"
+                  step="0.01"
+                  [(ngModel)]="mobilityReferenceAmount"
+                />
+              </div>
+
+              <small>
+                Este importe permanece separado del precio base
+                del servicio y no forma parte de la base comisionable.
+              </small>
+            </label>
+          }
         </div>
-
-        <div class="mobility-description">
-          {{ mobilityPolicyDescription() }}
-        </div>
-
-        @if (mobilityPolicy === 'SEPARATE') {
-          <label class="mobility-amount">
-            Monto referencial de movilidad
-            <div class="money-input">
-              <span>S/</span>
-              <input
-                type="number"
-                name="mobilityReferenceAmount"
-                min="0.01"
-                step="0.01"
-                [(ngModel)]="mobilityReferenceAmount"
-                [disabled]="saving()"
-                required
-              />
-            </div>
-            <small>
-              Este valor es referencial y se mostrará separado del
-              precio médico.
-            </small>
-          </label>
-        }
       </section>
 
-      <section class="form-card">
-        <div class="section-heading">
+      <section class="section-card">
+        <div class="section-title">
           <div>
             <p>Cobranza</p>
-            <h3>Métodos de pago aceptados</h3>
-            <span>
-              {{ selectedPaymentMethodCount() }}
-              método(s) seleccionado(s).
-            </span>
+
+            <h3>
+              Métodos de pago aceptados
+            </h3>
           </div>
+
+          <span>
+            {{ selectedPaymentMethodCount() }}
+            seleccionado(s)
+          </span>
+        </div>
+
+        <div class="information-note payment-note">
+          MedicDrive no recibe ni custodia el dinero del paciente.
+          Configure los datos donde desea recibir directamente
+          cada pago.
         </div>
 
         <div class="payment-grid">
@@ -271,86 +299,257 @@
             method of paymentMethods();
             track method.paymentMethodId
           ) {
-            <label
+            <article
               class="payment-card"
               [class.selected-payment]="method.selected"
             >
-              <input
-                type="checkbox"
-                [name]="
-                  'paymentMethod-' +
-                  method.paymentMethodId
-                "
-                [(ngModel)]="method.selected"
-                [disabled]="saving()"
-              />
+              <div class="payment-header">
+                <label class="switch-label">
+                  <input
+                    type="checkbox"
+                    [name]="
+                      'payment-method-' +
+                      method.paymentMethodId
+                    "
+                    [(ngModel)]="method.selected"
+                  />
 
-              <span class="payment-code">
-                {{ method.code }}
-              </span>
+                  <span>
+                    {{
+                      method.selected
+                        ? 'Habilitado'
+                        : 'Deshabilitado'
+                    }}
+                  </span>
+                </label>
 
-              <span class="payment-information">
-                <strong>{{ method.name }}</strong>
+                <span class="payment-code">
+                  {{ method.code }}
+                </span>
+              </div>
+
+              <div class="payment-information">
+                <strong>
+                  {{ method.name }}
+                </strong>
+
                 <small>
                   {{
                     method.requiresVoucher
-                      ? 'Requiere comprobante o constancia'
-                      : 'No requiere comprobante digital'
+                      ? 'El paciente podrá adjuntar un comprobante o constancia.'
+                      : 'No requiere comprobante digital.'
                   }}
                 </small>
-              </span>
-            </label>
+              </div>
+
+              @if (
+                method.selected
+                &&
+                isCash(method)
+              ) {
+                <div class="cash-note">
+                  No requiere información adicional.
+                </div>
+              }
+
+              @if (
+                method.selected
+                &&
+                isWallet(method)
+              ) {
+                <div class="payment-fields">
+                  <label>
+                    <span>
+                      Número de celular
+                    </span>
+
+                    <input
+                      type="text"
+                      inputmode="numeric"
+                      maxlength="30"
+                      [name]="
+                        'payment-mobile-' +
+                        method.paymentMethodId
+                      "
+                      [(ngModel)]="method.mobilePhone"
+                      placeholder="Ej. 999 999 999"
+                    />
+                  </label>
+
+                  <label>
+                    <span>
+                      Titular
+                    </span>
+
+                    <input
+                      type="text"
+                      maxlength="160"
+                      [name]="
+                        'payment-holder-' +
+                        method.paymentMethodId
+                      "
+                      [(ngModel)]="method.accountHolder"
+                      placeholder="Nombre del titular"
+                    />
+                  </label>
+                </div>
+              }
+
+              @if (
+                method.selected
+                &&
+                isBankTransfer(method)
+              ) {
+                <div class="payment-fields transfer-fields">
+                  <label>
+                    <span>
+                      Banco
+                    </span>
+
+                    <input
+                      type="text"
+                      maxlength="120"
+                      [name]="
+                        'payment-bank-' +
+                        method.paymentMethodId
+                      "
+                      [(ngModel)]="method.bankName"
+                      placeholder="Nombre del banco"
+                    />
+                  </label>
+
+                  <label>
+                    <span>
+                      Titular
+                    </span>
+
+                    <input
+                      type="text"
+                      maxlength="160"
+                      [name]="
+                        'payment-transfer-holder-' +
+                        method.paymentMethodId
+                      "
+                      [(ngModel)]="method.accountHolder"
+                      placeholder="Nombre del titular"
+                    />
+                  </label>
+
+                  <label>
+                    <span>
+                      Número de cuenta
+                    </span>
+
+                    <input
+                      type="text"
+                      maxlength="80"
+                      [name]="
+                        'payment-account-' +
+                        method.paymentMethodId
+                      "
+                      [(ngModel)]="method.accountNumber"
+                      placeholder="Número de cuenta"
+                    />
+                  </label>
+
+                  <label>
+                    <span>
+                      CCI
+                    </span>
+
+                    <input
+                      type="text"
+                      inputmode="numeric"
+                      maxlength="20"
+                      [name]="
+                        'payment-cci-' +
+                        method.paymentMethodId
+                      "
+                      [(ngModel)]="method.cci"
+                      placeholder="20 dígitos"
+                    />
+
+                    <small>
+                      Debe contener exactamente 20 dígitos.
+                    </small>
+                  </label>
+                </div>
+              }
+
+              @if (!method.selected) {
+                <div class="disabled-data-note">
+                  Este método no se mostrará como disponible.
+                  Los datos guardados se conservarán para una
+                  futura reactivación.
+                </div>
+              }
+            </article>
           }
         </div>
       </section>
 
-      <section class="form-card">
-        <div class="section-heading">
+      <section class="section-card">
+        <div class="section-title">
           <div>
             <p>Información adicional</p>
-            <h3>Notas comerciales</h3>
-            <span>
-              Agregue indicaciones generales para sus servicios.
-            </span>
+
+            <h3>
+              Configuración general
+            </h3>
           </div>
         </div>
 
-        <label class="notes-field">
-          Notas opcionales
+        <label class="wide-field">
+          <span>
+            Notas comerciales
+          </span>
+
           <textarea
             name="commercialNotes"
-            rows="5"
-            maxlength="1000"
+            maxlength="500"
+            rows="4"
             [(ngModel)]="commercialNotes"
-            [disabled]="saving()"
-            placeholder="Ejemplo: horarios preferentes, condiciones generales o información relevante para el paciente..."
+            placeholder="Información comercial que considere importante."
           ></textarea>
 
           <small>
-            {{ commercialNotes.length }} de 1000 caracteres
+            {{ commercialNotes.length }} / 500
           </small>
+        </label>
+
+        <label class="profile-status">
+          <input
+            type="checkbox"
+            name="commercialProfileActive"
+            [(ngModel)]="active"
+          />
+
+          <span>
+            Perfil comercial habilitado
+          </span>
         </label>
       </section>
 
-      <div class="form-actions">
-        <button
-          type="button"
-          class="secondary-button"
-          (click)="loadProfile()"
-          [disabled]="loading() || saving()"
-        >
-          Descartar cambios
-        </button>
+      <div class="save-panel">
+        <div>
+          <strong>
+            Guardar perfil comercial
+          </strong>
+
+          <span>
+            Se actualizarán servicios, precios, movilidad
+            y configuración de cobranza.
+          </span>
+        </div>
 
         <button
           type="submit"
-          class="primary-button"
-          [disabled]="loading() || saving()"
+          [disabled]="saving() || loading()"
         >
           {{
             saving()
-              ? 'Guardando configuración...'
-              : 'Guardar perfil comercial'
+              ? 'Guardando...'
+              : 'Guardar cambios'
           }}
         </button>
       </div>
